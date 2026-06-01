@@ -90,6 +90,7 @@ jobs:
         env:
           DOCUGIT_VERSION: ${{ needs.prepare.outputs.version_tag }}
         run: >
+          bun run embed-templates &&
           bun build src/cli/index.ts --compile
           --target=${{ matrix.target }}
           --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\""

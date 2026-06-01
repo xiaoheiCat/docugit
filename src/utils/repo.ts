@@ -1,6 +1,5 @@
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join, dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   createDefaultConfig,
   detectDocumentType,
@@ -16,16 +15,10 @@ import { unpackFromFile, inferTypeFromParts, listOoxmlParts } from "../ooxml/pac
 import { runGit, gitOutput, isGitRepo } from "../utils/git.ts";
 import { setupRepoSkill } from "../utils/skill.ts";
 import { setupDocumentAgentDocs } from "../config/document-agents-md.ts";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const TEMPLATES_DIR = join(__dirname, "../../templates");
+import { copyTemplate } from "./templates.ts";
 
 export function getRepoRoot(cwd = process.cwd()): string {
   return resolve(cwd);
-}
-
-export async function copyTemplate(type: DocumentType, targetDir: string): Promise<void> {
-  await cp(join(TEMPLATES_DIR, type), targetDir, { recursive: true });
 }
 
 export async function initRepoFromFile(

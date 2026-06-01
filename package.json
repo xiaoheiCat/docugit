@@ -8,8 +8,9 @@
   },
   "scripts": {
     "dev": "bun run src/cli/index.ts",
-    "build": "bun build src/cli/index.ts --compile --outfile dist/docugit",
+    "build": "bun run embed-templates && bun build src/cli/index.ts --compile --outfile dist/docugit",
     "sync-templates": "bun run scripts/sync-templates.ts",
+    "embed-templates": "bun run scripts/embed-templates.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

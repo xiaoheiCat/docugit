@@ -104,6 +104,7 @@ Do not move OOXML parts into a subdirectory. Packing skips dot-prefixed **repo-r
 
 - `docugit new` copies from `templates/{type}/`.
 - Regenerating templates: `bun run sync-templates` reads **hardcoded local paths** in `scripts/sync-templates.ts` (`Template.docx` etc.) and strips personal metadata. Update those paths if the maintainer’s Template files move.
+- After changing `templates/`, run `bun run embed-templates` so compiled binaries bundle the latest blank templates.
 
 ## Release / versioning
 
