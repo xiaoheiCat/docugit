@@ -29,6 +29,5 @@
     </Feature>
 
     <UIRef Id="DocuGitUI" />
-    <UIRef Id="WixUI_ErrorProgressText" />
   </Product>
 </Wix>
