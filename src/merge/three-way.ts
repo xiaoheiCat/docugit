@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { DocumentType } from "../config/docugit-yml.ts";
 import { computeSemanticDiff, summarizeChanges } from "../diff/engine.ts";
-import { listOoxmlParts, writePart } from "../ooxml/pack.ts";
+import { listOoxmlParts, writePart, writePartBytes, isTextOoxmlPart } from "../ooxml/pack.ts";
 import { gitOutput } from "../utils/git.ts";
 
 export interface MergeConflict {
@@ -158,8 +158,12 @@ export async function applyPackedChanges(
     const diff = await computeSemanticDiff(repoRoot, tempDir, config.document.type);
     const parts = await listOoxmlParts(tempDir);
     for (const part of parts) {
-      const content = await readFile(join(tempDir, part), "utf-8");
-      await writePart(repoRoot, part, content);
+      const bytes = await readFile(join(tempDir, part));
+      if (isTextOoxmlPart(part)) {
+        await writePart(repoRoot, part, bytes.toString("utf-8"));
+      } else {
+        await writePartBytes(repoRoot, part, bytes);
+      }
     }
     return summarizeChanges(diff);
   } finally {

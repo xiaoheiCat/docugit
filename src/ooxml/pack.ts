@@ -6,6 +6,35 @@ import type { DocumentType } from "../config/docugit-yml.ts";
 /** Root files that are DocuGit metadata, not OOXML parts. */
 const NON_OOXML_ROOT_FILES = new Set(["README.md", "AGENTS.md", "CLAUDE.md"]);
 
+function normalizePartPath(part: string): string {
+  return part.replace(/\\/g, "/");
+}
+
+function sortOoxmlParts(parts: string[]): string[] {
+  return [...parts].sort((a, b) => {
+    const na = normalizePartPath(a);
+    const nb = normalizePartPath(b);
+    const rank = (part: string) => {
+      if (part === "[Content_Types].xml") return 0;
+      if (part === "_rels/.rels") return 1;
+      return 2;
+    };
+    const ra = rank(na);
+    const rb = rank(nb);
+    if (ra !== rb) return ra - rb;
+    return na.localeCompare(nb);
+  });
+}
+
+export function isTextOoxmlPart(part: string): boolean {
+  const normalized = normalizePartPath(part);
+  return (
+    normalized.endsWith(".xml") ||
+    normalized.endsWith(".rels") ||
+    normalized === "[Content_Types].xml"
+  );
+}
+
 export async function listOoxmlParts(repoRoot: string): Promise<string[]> {
   const parts: string[] = [];
 
@@ -31,11 +60,15 @@ export async function listOoxmlParts(repoRoot: string): Promise<string[]> {
 
 export async function packToBuffer(repoRoot: string): Promise<Buffer> {
   const zip = new JSZip();
-  const parts = await listOoxmlParts(repoRoot);
+  const parts = sortOoxmlParts(await listOoxmlParts(repoRoot));
 
   for (const part of parts) {
     const content = await readFile(join(repoRoot, part));
-    zip.file(part.replace(/\\/g, "/"), content);
+    zip.file(normalizePartPath(part), content, {
+      // Office rejects ZIPs with explicit directory entries (PowerPoint: "cannot read").
+      createFolders: false,
+      compression: "DEFLATE",
+    });
   }
 
   return Buffer.from(await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
@@ -87,6 +120,12 @@ export async function writePart(repoRoot: string, part: string, content: string)
   const fullPath = join(repoRoot, part);
   await mkdir(dirname(fullPath), { recursive: true });
   await writeFile(fullPath, content, "utf-8");
+}
+
+export async function writePartBytes(repoRoot: string, part: string, content: Buffer): Promise<void> {
+  const fullPath = join(repoRoot, part);
+  await mkdir(dirname(fullPath), { recursive: true });
+  await writeFile(fullPath, content);
 }
 
 export async function partExists(repoRoot: string, part: string): Promise<boolean> {
