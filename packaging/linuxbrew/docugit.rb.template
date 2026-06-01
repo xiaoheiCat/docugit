@@ -1,0 +1,26 @@
+class Docugit < Formula
+  desc "Git-based version control for Office OpenXML documents"
+  homepage "https://github.com/xiaoheiCat/docugit"
+  version "@VERSION@"
+  license "MIT"
+
+  on_linux do
+    on_arm do
+      url "https://github.com/xiaoheiCat/docugit/releases/download/@VERSION_TAG@/docugit-linux-arm64"
+      sha256 "@SHA256_ARM64@"
+    end
+    on_intel do
+      url "https://github.com/xiaoheiCat/docugit/releases/download/@VERSION_TAG@/docugit-linux-amd64"
+      sha256 "@SHA256_AMD64@"
+    end
+  end
+
+  def install
+    binary = Hardware::CPU.arm? ? "docugit-linux-arm64" : "docugit-linux-amd64"
+    bin.install binary => "docugit"
+  end
+
+  test do
+    system "#{bin}/docugit", "--version"
+  end
+end

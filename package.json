@@ -1,0 +1,29 @@
+{
+  "name": "docugit",
+  "version": "0.0.0-dev",
+  "description": "Git-based version control for Office OpenXML documents",
+  "type": "module",
+  "bin": {
+    "docugit": "./src/cli/index.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/cli/index.ts",
+    "build": "bun build src/cli/index.ts --compile --outfile dist/docugit",
+    "sync-templates": "bun run scripts/sync-templates.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^25.9.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "chokidar": "^5.0.0",
+    "commander": "^15.0.0",
+    "diff": "^9.0.0",
+    "fast-xml-parser": "^5.8.0",
+    "jszip": "^3.10.1",
+    "open": "^11.0.0",
+    "yaml": "^2.9.0"
+  }
+}
