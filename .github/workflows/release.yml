@@ -113,8 +113,10 @@ jobs:
       - name: Flatten artifacts
         run: |
           mkdir -p release/bin release/install
-          find dist/bin -type f -executable -exec cp {} release/bin/ \; 2>/dev/null || true
-          find dist/bin -type f -name "*.exe" -exec cp {} release/bin/ \;
+          # Artifact download drops the executable bit on Unix binaries; do not rely on -executable.
+          find dist/bin -mindepth 2 -type f -exec cp {} release/bin/ \;
+          find release/bin -type f ! -name '*.exe' -exec chmod +x {} +
+          ls -la release/bin/
 
       - name: Install nfpm
         run: |
@@ -126,6 +128,8 @@ jobs:
         env:
           PKG_VERSION: ${{ needs.prepare.outputs.pkg_version }}
         run: |
+          set -euo pipefail
+          built=0
           for pair in "docugit-linux-amd64:amd64" "docugit-linux-arm64:arm64"; do
             bin="${pair%%:*}"
             arch="${pair##*:}"
@@ -136,15 +140,24 @@ jobs:
                 --env VERSION="$PKG_VERSION" \
                 --env ARCH="$arch" \
                 --env BINARY="release/bin/$bin"
+              built=$((built + 1))
             fi
           done
+          if [ "$built" -eq 0 ]; then
+            echo "error: no Linux binaries found in release/bin; deb packages were not built" >&2
+            exit 1
+          fi
 
       - name: Build Homebrew formula
         env:
           PKG_VERSION: ${{ needs.prepare.outputs.pkg_version }}
           VERSION_TAG: ${{ needs.prepare.outputs.version_tag }}
         run: |
+          set -euo pipefail
           mkdir -p release/homebrew release/linuxbrew
+          test -f release/bin/docugit-darwin-arm64
+          test -f release/bin/docugit-linux-amd64
+          test -f release/bin/docugit-linux-arm64
           SHA=$(sha256sum release/bin/docugit-darwin-arm64 | awk '{print $1}')
           sed -e "s/@VERSION@/${PKG_VERSION}/g" \
               -e "s/@VERSION_TAG@/${VERSION_TAG}/g" \
