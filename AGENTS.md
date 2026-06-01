@@ -83,7 +83,7 @@ Also register new subcommands/flags in [`src/cli/index.ts`](src/cli/index.ts) (C
 - `new -d <dir>` initializes in `<dir>` when that directory is empty (or missing). If `<dir>` is not empty, the repo is created in `<dir>/<document-base>/` instead (e.g. `hello_everyone.docx` → `hello_everyone/`).
 - Writes `AGENTS.md` + `CLAUDE.md` → `AGENTS.md` symlink with document-repo agent rules.
 - Copies bundled skill into `.agents/skills/docugit/` on init/new (`SKILL.md` is embedded in the compiled binary).
-- Also tries `npx skills add …` (warn on failure only); repo-local skill is always written.
+- Also tries `npx skills add …` from the document repo root (warn on failure only); repo-local skill is always written.
 
 ### Document repo vs tool repo
 

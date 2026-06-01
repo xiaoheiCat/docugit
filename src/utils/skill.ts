@@ -38,7 +38,7 @@ async function writeEmbeddedSkillDir(targetDir: string): Promise<void> {
   await writeFile(join(targetDir, "SKILL.md"), embeddedSkillMd, "utf-8");
 }
 
-function tryNpxSkillsAdd(skillSource: string): { ok: boolean; reason?: string } {
+function tryNpxSkillsAdd(skillSource: string, repoRoot: string): { ok: boolean; reason?: string } {
   const npxCheck = spawnSync("npx", ["--version"], { encoding: "utf-8" });
   if (npxCheck.error || npxCheck.status !== 0) {
     return { ok: false, reason: "npx is not available" };
@@ -47,6 +47,7 @@ function tryNpxSkillsAdd(skillSource: string): { ok: boolean; reason?: string } 
   const result = spawnSync("npx", ["skills", "add", skillSource, "-y"], {
     encoding: "utf-8",
     stdio: "pipe",
+    cwd: repoRoot,
   });
 
   if (result.status === 0) {
@@ -67,7 +68,7 @@ export async function setupRepoSkill(repoRoot: string): Promise<void> {
   await writeEmbeddedSkillDir(repoSkillDir);
 
   const npxSource = (await resolveDocuGitSkillSource()) ?? repoSkillDir;
-  const npxResult = tryNpxSkillsAdd(npxSource);
+  const npxResult = tryNpxSkillsAdd(npxSource, repoRoot);
   if (!npxResult.ok) {
     console.warn(
       [
