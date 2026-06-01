@@ -31,12 +31,17 @@ docugit --version
 
 ### Homebrew
 
-Download `docugit-homebrew.rb` (macOS) or `docugit-linuxbrew.rb` (Linux) from [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases/latest), then:
+Install directly from the Release formula URL (no manual download):
 
 ```bash
-brew install ./docugit-homebrew.rb   # macOS
-brew install ./docugit-linuxbrew.rb  # Linux
+# macOS
+brew install https://github.com/xiaoheiCat/docugit/releases/latest/download/docugit-homebrew.rb
+
+# Linux (Homebrew on Linux)
+brew install https://github.com/xiaoheiCat/docugit/releases/latest/download/docugit-linuxbrew.rb
 ```
+
+Or install a downloaded `.rb` file: `brew install ./docugit-homebrew.rb`
 
 ### APT deb (Linux)
 

@@ -31,12 +31,17 @@ docugit --version
 
 ### Homebrew
 
-从 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases/latest) 下载 `docugit-homebrew.rb`（macOS）或 `docugit-linuxbrew.rb`（Linux），然后：
+可直接用 Release 上的 formula 链接安装（无需先下载文件）：
 
 ```bash
-brew install ./docugit-homebrew.rb   # macOS
-brew install ./docugit-linuxbrew.rb  # Linux
+# macOS
+brew install https://github.com/xiaoheiCat/docugit/releases/latest/download/docugit-homebrew.rb
+
+# Linux（Linux 版 Homebrew）
+brew install https://github.com/xiaoheiCat/docugit/releases/latest/download/docugit-linuxbrew.rb
 ```
+
+若已下载 `.rb` 文件，也可：`brew install ./docugit-homebrew.rb`
 
 ### APT deb（Linux）
 
