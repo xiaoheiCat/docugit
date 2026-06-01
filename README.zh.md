@@ -112,6 +112,9 @@ docugit branch
 my-doc/
 ├── .docugit.yml       # DocuGit 配置
 ├── README.md          # 自动生成的说明与 Metadata
+├── AGENTS.md          # Agent 说明（优先使用 DocuGit）
+├── CLAUDE.md          # 指向 AGENTS.md 的软链接
+├── .agents/skills/docugit/
 ├── [Content_Types].xml
 ├── _rels/
 ├── word/              # docx

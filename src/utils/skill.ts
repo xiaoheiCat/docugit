@@ -1,7 +1,8 @@
 import { spawnSync } from "node:child_process";
-import { cp, stat } from "node:fs/promises";
+import { mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import embeddedSkillMd from "../../skills/docugit/SKILL.md" with { type: "text" };
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -14,6 +15,7 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
+/** Dev / sidecar layouts where skills/ sits next to the executable or source tree. */
 export async function resolveDocuGitSkillSource(): Promise<string | null> {
   const candidates = [
     join(__dirname, "../../skills/docugit"),
@@ -29,6 +31,11 @@ export async function resolveDocuGitSkillSource(): Promise<string | null> {
   }
 
   return null;
+}
+
+async function writeEmbeddedSkillDir(targetDir: string): Promise<void> {
+  await mkdir(targetDir, { recursive: true });
+  await writeFile(join(targetDir, "SKILL.md"), embeddedSkillMd, "utf-8");
 }
 
 function tryNpxSkillsAdd(skillSource: string): { ok: boolean; reason?: string } {
@@ -53,35 +60,20 @@ function tryNpxSkillsAdd(skillSource: string): { ok: boolean; reason?: string } 
   };
 }
 
-async function copySkillToRepo(repoRoot: string, skillSource: string): Promise<void> {
-  const target = join(repoRoot, ".agents/skills/docugit");
-  await cp(skillSource, target, { recursive: true, force: true });
-}
-
 export async function setupRepoSkill(repoRoot: string): Promise<void> {
-  const skillSource = await resolveDocuGitSkillSource();
-  if (!skillSource) {
+  const repoSkillDir = join(repoRoot, ".agents/skills/docugit");
+
+  // Bundled at compile time; released into the document repo on init/new.
+  await writeEmbeddedSkillDir(repoSkillDir);
+
+  const npxSource = (await resolveDocuGitSkillSource()) ?? repoSkillDir;
+  const npxResult = tryNpxSkillsAdd(npxSource);
+  if (!npxResult.ok) {
     console.warn(
-      "Warning: DocuGit Skill source not found. To work with an AI agent, install the Skill manually into a directory supported by your agent.",
+      [
+        `Warning: Failed to initialize DocuGit Skill via npx (${npxResult.reason ?? "unknown error"}).`,
+        "The Skill is available in .agents/skills/docugit/ in this repository.",
+      ].join("\n"),
     );
-    return;
-  }
-
-  const npxResult = tryNpxSkillsAdd(skillSource);
-  if (npxResult.ok) {
-    return;
-  }
-
-  console.warn(
-    [
-      `Warning: Failed to initialize DocuGit Skill via npx (${npxResult.reason ?? "unknown error"}).`,
-      "To work with an AI agent, install the Skill manually into a directory supported by your agent.",
-    ].join("\n"),
-  );
-
-  try {
-    await copySkillToRepo(repoRoot, skillSource);
-  } catch {
-    /* fallback failed silently */
   }
 }

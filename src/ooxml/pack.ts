@@ -3,7 +3,8 @@ import { join, relative, dirname } from "node:path";
 import JSZip from "jszip";
 import type { DocumentType } from "../config/docugit-yml.ts";
 
-const RESERVED_FILES = new Set([".docugit.yml", "README.md", ".git", ".gitignore"]);
+/** Root files that are DocuGit metadata, not OOXML parts. */
+const NON_OOXML_ROOT_FILES = new Set(["README.md", "AGENTS.md", "CLAUDE.md"]);
 
 export async function listOoxmlParts(repoRoot: string): Promise<string[]> {
   const parts: string[] = [];
@@ -11,15 +12,15 @@ export async function listOoxmlParts(repoRoot: string): Promise<string[]> {
   async function walk(dir: string): Promise<void> {
     const entries = await readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
+      if (entry.name.startsWith(".")) continue;
+      if (dir === repoRoot && NON_OOXML_ROOT_FILES.has(entry.name)) continue;
+
       const fullPath = join(dir, entry.name);
-      const rel = relative(repoRoot, fullPath);
-      if (rel.startsWith(".git")) continue;
-      if (RESERVED_FILES.has(entry.name) && dir === repoRoot) continue;
 
       if (entry.isDirectory()) {
         await walk(fullPath);
       } else if (entry.isFile()) {
-        parts.push(rel);
+        parts.push(relative(repoRoot, fullPath));
       }
     }
   }

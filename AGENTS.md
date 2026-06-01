@@ -83,10 +83,11 @@ Also register new subcommands/flags in [`src/cli/index.ts`](src/cli/index.ts) (C
 - Session ends when the Office file is closed (file-lock polling), not on Ctrl+C messaging.
 - Status lines should read like git (short factual lines / `hint:`), not multi-line “keep this terminal open” warnings unless explicitly requested.
 
-### `docugit init`
+### `docugit init` / `docugit new`
 
-- Tries `npx skills add <path-to>/skills/docugit -y` (silent on success).
-- On failure: warn + copy skill to `.agents/skills/docugit` in the **document repo** (fallback success/failure is silent).
+- Writes `AGENTS.md` + `CLAUDE.md` → `AGENTS.md` symlink with document-repo agent rules.
+- Copies bundled skill into `.agents/skills/docugit/` on init/new (`SKILL.md` is embedded in the compiled binary).
+- Also tries `npx skills add …` (warn on failure only); repo-local skill is always written.
 
 ### Document repo vs tool repo
 
@@ -95,11 +96,14 @@ A **document repository** checked out by users looks like:
 ```
 .docugit.yml
 README.md
+AGENTS.md
+CLAUDE.md -> AGENTS.md
+.agents/skills/docugit/
 [Content_Types].xml
 word/ | xl/ | ppt/
 ```
 
-Do not move OOXML parts into a subdirectory. Reserved root files: `.docugit.yml`, `README.md`, `.gitignore`.
+Do not move OOXML parts into a subdirectory. Packing excludes dot-prefixed paths (`.docugit.yml`, `.agents/`, …) and root `README.md` / `AGENTS.md` / `CLAUDE.md`.
 
 ### Templates
 

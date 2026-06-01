@@ -112,6 +112,9 @@ One DocuGit repository = one collaborative document:
 my-doc/
 ├── .docugit.yml       # DocuGit config
 ├── README.md          # auto-generated metadata and notes
+├── AGENTS.md          # agent instructions (DocuGit-first)
+├── CLAUDE.md          # symlink to AGENTS.md
+├── .agents/skills/docugit/
 ├── [Content_Types].xml
 ├── _rels/
 ├── word/              # docx

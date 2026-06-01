@@ -15,6 +15,7 @@ import {
 import { unpackFromFile, inferTypeFromParts, listOoxmlParts } from "../ooxml/pack.ts";
 import { runGit, gitOutput, isGitRepo } from "../utils/git.ts";
 import { setupRepoSkill } from "../utils/skill.ts";
+import { setupDocumentAgentDocs } from "../config/document-agents-md.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const TEMPLATES_DIR = join(__dirname, "../../templates");
@@ -56,6 +57,7 @@ export async function initRepoFromFile(
   );
 
   await setupRepoSkill(targetDir);
+  await setupDocumentAgentDocs(targetDir);
 
   runGit(["add", "."], targetDir);
   runGit(["commit", "-m", `docugit: init ${originalName}`], targetDir);
@@ -86,6 +88,10 @@ export async function newRepo(
   }
 
   await writeFile(join(targetDir, ".gitignore"), ".docugit/\n*.tmp\n.DS_Store\n", "utf-8");
+
+  await setupRepoSkill(targetDir);
+  await setupDocumentAgentDocs(targetDir);
+
   runGit(["add", "."], targetDir);
   runGit(["commit", "-m", `docugit: create ${originalName}`], targetDir);
 }
