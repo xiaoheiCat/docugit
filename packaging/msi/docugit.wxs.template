@@ -7,9 +7,9 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
 
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="ProgramFilesFolder">
+      <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLDIR" Name="DocuGit">
-          <Component Id="MainExecutable" Guid="*">
+          <Component Id="MainExecutable" Guid="*" Win64="yes">
             <File Id="DocuGitExe" Source="@BINARY@" KeyPath="yes" />
             <Environment
               Id="DocuGitPath"
