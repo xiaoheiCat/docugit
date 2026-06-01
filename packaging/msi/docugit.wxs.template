@@ -8,6 +8,14 @@
         <Directory Id="INSTALLDIR" Name="DocuGit">
           <Component Id="MainExecutable" Guid="*">
             <File Id="DocuGitExe" Source="@BINARY@" KeyPath="yes" />
+            <Environment
+              Id="DocuGitPath"
+              Name="PATH"
+              Value="[INSTALLDIR]"
+              Permanent="no"
+              Part="last"
+              Action="set"
+              System="yes" />
           </Component>
         </Directory>
       </Directory>
