@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - Formula/**
   workflow_dispatch:
 
 permissions:
@@ -156,22 +158,22 @@ jobs:
           VERSION_TAG: ${{ needs.prepare.outputs.version_tag }}
         run: |
           set -euo pipefail
-          mkdir -p release/homebrew release/linuxbrew
+          mkdir -p Formula
           test -f release/bin/docugit-darwin-arm64
+          test -f release/bin/docugit-darwin-amd64
           test -f release/bin/docugit-linux-amd64
           test -f release/bin/docugit-linux-arm64
-          SHA=$(sha256sum release/bin/docugit-darwin-arm64 | awk '{print $1}')
-          sed -e "s/@VERSION@/${PKG_VERSION}/g" \
-              -e "s/@VERSION_TAG@/${VERSION_TAG}/g" \
-              -e "s/@SHA256@/$SHA/g" \
-            packaging/homebrew/docugit.rb.template > release/homebrew/docugit-homebrew.rb
+          SHA_DARWIN_ARM64=$(sha256sum release/bin/docugit-darwin-arm64 | awk '{print $1}')
+          SHA_DARWIN_AMD64=$(sha256sum release/bin/docugit-darwin-amd64 | awk '{print $1}')
           SHA_LINUX_AMD64=$(sha256sum release/bin/docugit-linux-amd64 | awk '{print $1}')
           SHA_LINUX_ARM64=$(sha256sum release/bin/docugit-linux-arm64 | awk '{print $1}')
           sed -e "s/@VERSION@/${PKG_VERSION}/g" \
               -e "s/@VERSION_TAG@/${VERSION_TAG}/g" \
-              -e "s/@SHA256_AMD64@/$SHA_LINUX_AMD64/g" \
-              -e "s/@SHA256_ARM64@/$SHA_LINUX_ARM64/g" \
-            packaging/linuxbrew/docugit.rb.template > release/linuxbrew/docugit-linuxbrew.rb
+              -e "s/@SHA256_DARWIN_ARM64@/${SHA_DARWIN_ARM64}/g" \
+              -e "s/@SHA256_DARWIN_AMD64@/${SHA_DARWIN_AMD64}/g" \
+              -e "s/@SHA256_LINUX_AMD64@/${SHA_LINUX_AMD64}/g" \
+              -e "s/@SHA256_LINUX_ARM64@/${SHA_LINUX_ARM64}/g" \
+            packaging/homebrew/docugit.rb.template > Formula/docugit.rb
 
       - name: Build MSI (linux via wixl)
         env:
@@ -200,7 +202,16 @@ jobs:
           files: |
             release/bin/*
             release/install/*
-            release/homebrew/*
-            release/linuxbrew/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit Homebrew formula
+        env:
+          VERSION_TAG: ${{ needs.prepare.outputs.version_tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/docugit.rb
+          git diff --staged --quiet && exit 0
+          git commit -m "chore: update Homebrew formula for ${VERSION_TAG}"
+          git push
