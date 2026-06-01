@@ -102,7 +102,7 @@ jobs:
         run: |
           $candle = Join-Path ${env:ProgramFiles(x86)} 'WiX Toolset v3.14\bin\candle.exe'
           if (-not (Test-Path $candle)) {
-            choco install wixtoolset --version=3.14.1.8722 -y --no-progress
+            choco install wixtoolset --version=3.14.1.20250415 -y --no-progress
           }
           if (-not (Test-Path $candle)) {
             throw 'WiX Toolset 3.14 not found after install'
