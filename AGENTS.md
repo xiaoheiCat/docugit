@@ -103,7 +103,7 @@ CLAUDE.md -> AGENTS.md
 word/ | xl/ | ppt/
 ```
 
-Do not move OOXML parts into a subdirectory. Packing skips dot-prefixed **repo-root** metadata (`.docugit.yml`, `.agents/`, …) and root `README.md` / `AGENTS.md` / `CLAUDE.md`. OOXML parts such as `_rels/.rels` are always included.
+Do not move OOXML parts into a subdirectory. Packing skips dot-prefixed **repo-root** metadata (`.docugit.yml`, `.agents/`, …) and root `README.md` / `AGENTS.md` / `CLAUDE.md` / `skills-lock.json`. OOXML parts such as `_rels/.rels` are always included.
 
 ### Templates
 

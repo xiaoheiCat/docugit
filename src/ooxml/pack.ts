@@ -4,7 +4,7 @@ import JSZip from "jszip";
 import type { DocumentType } from "../config/docugit-yml.ts";
 
 /** Root files that are DocuGit metadata, not OOXML parts. */
-const NON_OOXML_ROOT_FILES = new Set(["README.md", "AGENTS.md", "CLAUDE.md"]);
+const NON_OOXML_ROOT_FILES = new Set(["README.md", "AGENTS.md", "CLAUDE.md", "skills-lock.json"]);
 
 function normalizePartPath(part: string): string {
   return part.replace(/\\/g, "/");
