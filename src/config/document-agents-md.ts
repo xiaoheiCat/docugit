@@ -8,10 +8,8 @@ This is a **DocuGit document repository** (an unpacked Office document under ver
 ## Rules
 
 - Do **not** use Git directly on this repository. Use **DocuGit** instead (\`docugit open\`, \`docugit diff\`, \`docugit commit\`, \`docugit merge\`, \`docugit export\`, etc.).
-- Prefer \`docugit open\` to edit content; do not hand-edit OOXML XML unless you know what you are doing.
+- **Prefer \`docugit open\`** for users to edit the document; do not hand-edit OOXML XML unless you know what you are doing.
 - Read [.agents/skills/docugit/SKILL.md](.agents/skills/docugit/SKILL.md) for the full agent workflow.
-
-\`CLAUDE.md\` symlinks here.
 `;
 
 export async function setupDocumentAgentDocs(repoRoot: string): Promise<void> {
