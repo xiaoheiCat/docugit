@@ -25,8 +25,10 @@ sudo apt-get install -y \
   gobject-introspection libgirepository1.0-dev \
   valac pkg-config perl python3-pip
 
+PREFIX="${HOME}/.local"
+
 python3 -m pip install --user "meson>=1.4" ninja
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="${PREFIX}/bin:${PATH}"
 
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
@@ -35,9 +37,10 @@ git clone --depth 1 --recursive --branch "v${MSITOOLS_VERSION}" \
   https://github.com/GNOME/msitools.git "$tmpdir/msitools"
 
 cd "$tmpdir/msitools"
-meson setup build --prefix=/usr
+# Install into ~/.local so `ninja install` does not need sudo (sudo breaks user pip meson).
+meson setup build --prefix="${PREFIX}"
 ninja -C build
-sudo ninja -C build install
+ninja -C build install
 
 installed_version="$(wixl --version 2>&1 | head -1 || true)"
 if ! wixl_version_ok "$installed_version"; then
