@@ -182,6 +182,7 @@ jobs:
         run: |
           sudo apt-get install -y wixl wixl-data
           MSI_VERSION="$(echo "$PKG_VERSION" | tr '_' '.')"
+          mapfile -t WIXUI_SOURCES < <(find packaging/msi/wixui -name '*.wxs' | sort)
           for pair in "docugit-windows-amd64:amd64" "docugit-windows-arm64:arm64"; do
             bin="${pair%%:*}"
             arch="${pair##*:}"
@@ -190,7 +191,7 @@ jobs:
                   -e "s/@ARCH@/$arch/g" \
                   -e "s|@BINARY@|release/bin/${bin}.exe|g" \
                 packaging/msi/docugit.wxs.template > /tmp/docugit.wxs
-              wixl -o "release/install/docugit-${PKG_VERSION}-${arch}.msi" /tmp/docugit.wxs
+              wixl -o "release/install/docugit-${PKG_VERSION}-${arch}.msi" /tmp/docugit.wxs "${WIXUI_SOURCES[@]}"
             fi
           done
 

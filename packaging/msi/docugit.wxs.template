@@ -3,6 +3,9 @@
   <Product Id="*" Name="DocuGit" Language="1033" Version="@VERSION@.0" Manufacturer="DocuGit" UpgradeCode="f5e9d8c7-b6a5-4321-9abc-def012345678">
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
     <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLDIR" Name="DocuGit">
@@ -20,8 +23,12 @@
         </Directory>
       </Directory>
     </Directory>
+
     <Feature Id="MainFeature" Title="DocuGit" Level="1">
       <ComponentRef Id="MainExecutable" />
     </Feature>
+
+    <UIRef Id="DocuGitUI" />
+    <UIRef Id="WixUI_ErrorProgressText" />
   </Product>
 </Wix>
