@@ -44,10 +44,8 @@ $templatePath = Join-Path $repoRoot 'packaging/msi/docugit.wxs.template'
 $wxsPath = Join-Path $workDir 'docugit.wxs'
 $uiWxsPath = Join-Path $repoRoot 'packaging/msi/wixui/WixUI_DocuGit.wxs'
 
-(Get-Content $templatePath -Raw) `
-    .Replace('@VERSION@', $msiVersion) `
-    .Replace('@BINARY@', $binaryPath) |
-    Set-Content -Path $wxsPath -Encoding UTF8
+$wxs = (Get-Content $templatePath -Raw).Replace('@VERSION@', $msiVersion).Replace('@BINARY@', $binaryPath)
+Set-Content -Path $wxsPath -Value $wxs -Encoding UTF8
 
 & candle.exe -arch $Arch -ext WixUIExtension -out "$workDir\" $wxsPath $uiWxsPath
 & light.exe -ext WixUIExtension -cultures:en-us -out $OutMsi `
