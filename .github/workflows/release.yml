@@ -179,7 +179,9 @@ jobs:
       - name: Build MSI (linux via wixl)
         env:
           PKG_VERSION: ${{ needs.prepare.outputs.pkg_version }}
+          FORCE_WIXL_INSTALL: "1"
         run: |
+          set -euo pipefail
           bash scripts/install-wixl.sh
           export PATH="$HOME/.local/bin:$PATH"
           export LD_LIBRARY_PATH="$HOME/.local/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
