@@ -88,6 +88,7 @@ docugit diff --html    # browser report (temp dir + auto open)
 docugit diff --json    # structured JSON output
 
 # Export to an Office file
+docugit export
 docugit export ./output.docx
 
 # Commit (auto semantic summary)
@@ -133,7 +134,9 @@ my-doc/
 | `docugit new <type> <name>` | Create a blank docx/xlsx/pptx repo |
 | `docugit clone <url>` | Clone a remote repository |
 | `docugit open` | Open in Office and watch for saves |
-| `docugit export [path]` | Export an Office file |
+| `docugit export [path]` | Export an Office file (default: `../<document>`) |
+| `docugit name` | Show document filename |
+| `docugit rename <name>` | Rename document filename |
 | `docugit diff [--html\|--json]` | Semantic diff |
 | `docugit status` | Status + semantic summary |
 | `docugit log` | Commit history |

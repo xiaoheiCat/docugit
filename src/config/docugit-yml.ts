@@ -41,6 +41,30 @@ export function getExtension(type: DocumentType): string {
   return type;
 }
 
+export function formatDocumentFilename(originalName: string, type: DocumentType): string {
+  return originalName.endsWith(`.${type}`) ? originalName : `${originalName}.${type}`;
+}
+
+export function normalizeDocumentName(name: string, type: DocumentType): string {
+  const trimmed = name.trim();
+  if (!trimmed) {
+    throw new Error("fatal: document name must not be empty");
+  }
+  if (/[/\\]/.test(trimmed)) {
+    throw new Error("fatal: document name must not contain path separators");
+  }
+
+  const detected = detectDocumentType(trimmed);
+  if (detected) {
+    if (detected !== type) {
+      throw new Error(`fatal: document name extension must be .${type}`);
+    }
+    return trimmed;
+  }
+
+  return `${trimmed}.${type}`;
+}
+
 export async function readConfig(repoRoot: string): Promise<DocuGitConfig> {
   const content = await readFile(join(repoRoot, DOCUGIT_CONFIG_FILE), "utf-8");
   return parse(content) as DocuGitConfig;

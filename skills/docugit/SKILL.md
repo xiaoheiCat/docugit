@@ -58,7 +58,16 @@ docugit push origin main
 ### 导出
 
 ```bash
+docugit export
 docugit export ./final.docx
+```
+
+### 文档名称
+
+```bash
+docugit name
+docugit rename "新版计划.docx"
+docugit commit -m "rename document"
 ```
 
 ## 命令参考
@@ -69,7 +78,9 @@ docugit export ./final.docx
 | `new` | `<docx\|xlsx\|pptx> <name> [-d dir]` |
 | `clone` | `<url> [dir]` |
 | `open` | |
-| `export` | `[output]` |
+| `export` | `[output]` (default: `../<document>`) |
+| `name` | |
+| `rename` | `<name>` |
 | `diff` | `[--html] [--json] [--ref ref]` |
 | `status` | |
 | `log` | `[args...]` |

@@ -6,6 +6,9 @@ import {
   detectDocumentType,
   generateReadme,
   writeConfig,
+  formatDocumentFilename,
+  normalizeDocumentName,
+  readConfig,
   type Author,
   type DocumentType,
 } from "../config/docugit-yml.ts";
@@ -91,13 +94,24 @@ export async function exportDocument(repoRoot: string, outputPath?: string): Pro
   const { readConfig } = await import("../config/docugit-yml.ts");
   const { packToFile } = await import("../ooxml/pack.ts");
   const config = await readConfig(repoRoot);
-  const out =
-    outputPath ??
-    join(repoRoot, config.document.originalName.endsWith(`.${config.document.type}`)
-      ? config.document.originalName
-      : `${config.document.originalName}.${config.document.type}`);
+  const filename = formatDocumentFilename(config.document.originalName, config.document.type);
+  const out = outputPath ?? join(repoRoot, "..", filename);
   await packToFile(repoRoot, out);
   return out;
+}
+
+export async function getDocumentName(repoRoot: string): Promise<string> {
+  const config = await readConfig(repoRoot);
+  return formatDocumentFilename(config.document.originalName, config.document.type);
+}
+
+export async function renameDocument(repoRoot: string, newName: string): Promise<string> {
+  const config = await readConfig(repoRoot);
+  const normalized = normalizeDocumentName(newName, config.document.type);
+  config.document.originalName = normalized;
+  await writeConfig(repoRoot, config);
+  await generateReadme(repoRoot, config);
+  return normalized;
 }
 
 export async function getWorkingTreeSnapshot(repoRoot: string): Promise<string> {

@@ -6,12 +6,15 @@ import { runInit, runNew, runExport } from "./commands/init.ts";
 import { runOpen } from "./commands/open.ts";
 import { runDiff, runStatus, runLog } from "./commands/diff.ts";
 import { runCommit, runMerge } from "./commands/commit.ts";
+import { runName, runRename } from "./commands/name.ts";
 
 const DOCUGIT_COMMANDS = new Set([
   "init",
   "new",
   "open",
   "export",
+  "name",
+  "rename",
   "diff",
   "status",
   "log",
@@ -69,9 +72,24 @@ async function main(): Promise<void> {
   program
     .command("export")
     .description("Export as an Office file")
-    .argument("[output]", "Output path")
+    .argument("[output]", "Output path (default: ../<document>)")
     .action(async (output?: string) => {
       process.exit(await runExport(output));
+    });
+
+  program
+    .command("name")
+    .description("Show the document filename")
+    .action(async () => {
+      process.exit(await runName());
+    });
+
+  program
+    .command("rename")
+    .description("Rename the document filename")
+    .argument("<name>", "New document filename")
+    .action(async (name: string) => {
+      process.exit(await runRename(name));
     });
 
   program

@@ -88,6 +88,7 @@ docugit diff --html    # 浏览器报告（临时目录 + 自动打开）
 docugit diff --json    # JSON 结构化输出
 
 # 导出为 Office 文件
+docugit export
 docugit export ./output.docx
 
 # 提交（自动生成语义摘要）
@@ -133,7 +134,9 @@ my-doc/
 | `docugit new <type> <name>` | 创建空白 docx/xlsx/pptx 仓库 |
 | `docugit clone <url>` | 克隆远程仓库 |
 | `docugit open` | 在 Office 中打开并监听保存 |
-| `docugit export [path]` | 导出 Office 文件 |
+| `docugit export [path]` | 导出 Office 文件（默认 `../<文档名>`） |
+| `docugit name` | 查看文档文件名 |
+| `docugit rename <name>` | 修改文档文件名 |
 | `docugit diff [--html\|--json]` | 语义 diff |
 | `docugit status` | 状态 + 语义摘要 |
 | `docugit log` | 提交历史 |
