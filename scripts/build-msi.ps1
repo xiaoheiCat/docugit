@@ -18,7 +18,7 @@ $ErrorActionPreference = 'Stop'
 function ConvertTo-MsiProductVersion {
     param([string]$PkgVersion)
 
-    # PKG_VERSION: 2026.06.01_11.14.29_3d6a44 -> MSI: 6.6.2114.15722
+    # PKG_VERSION: 2026.06.01_11.14.29_3d6a44 -> MSI: 26.6.2114.15722
     # WiX limits: major/minor < 256, build/revision < 65536.
     if ($PkgVersion -notmatch '^(\d+)\.(\d+)\.(\d+)_(\d+)\.(\d+)\.(\d+)_([0-9a-f]+)$') {
         throw "unsupported PKG_VERSION format for MSI: $PkgVersion"
@@ -32,7 +32,7 @@ function ConvertTo-MsiProductVersion {
     $second = [int]$Matches[6]
     $sha = $Matches[7]
 
-    $major = $year - 2020
+    $major = $year - 2000
     if ($major -lt 0 -or $major -ge 256) {
         throw "PKG_VERSION year out of MSI major range: $year"
     }
