@@ -7,8 +7,9 @@ priority: optional
 maintainer: DocuGit <https://github.com/xiaoheiCat/docugit>
 description: Git-based version control for Office OpenXML documents
 homepage: https://github.com/xiaoheiCat/docugit
-license: MIT
+license: GPL-3.0
 
+# Placeholders ${VERSION}, ${ARCH}, ${BINARY} are rendered by CI before nfpm runs.
 contents:
   - src: ${BINARY}
     dst: /usr/local/bin/docugit
