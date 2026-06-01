@@ -111,7 +111,7 @@ Do not move OOXML parts into a subdirectory. Packing skips dot-prefixed **repo-r
 
 - Push to **`main`** triggers Release (not tags).
 - Version format: `vYYYY.MM.DD_HH.mm.ss_<6-char-sha>` (also baked into binaries).
-- Windows MSI uses vendored WiX `DocuGitUI` dialogs (`packaging/msi/wixui/`); refresh with `bash scripts/vendor-wixui.sh` when updating WiX UI sources.
+- Windows MSI uses vendored WiX `DocuGitUI` dialogs (`packaging/msi/wixui/`); refresh with `bash scripts/vendor-wixui.sh` when updating WiX UI sources. CI builds MSI natively on Windows runners via `scripts/build-msi.ps1` (WiX Toolset 3.14 candle/light).
 - Do not hardcode example version strings in docs; use placeholders like `docugit_<version>_<arch>.deb`.
 
 ## What not to do

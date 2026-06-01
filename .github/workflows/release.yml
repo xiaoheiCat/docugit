@@ -96,11 +96,45 @@ jobs:
           --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\""
           --outfile dist/${{ matrix.artifact }}${{ matrix.ext }}
 
+      - name: Install WiX Toolset
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $candle = Join-Path ${env:ProgramFiles(x86)} 'WiX Toolset v3.14\bin\candle.exe'
+          if (-not (Test-Path $candle)) {
+            choco install wixtoolset --version=3.14.1.8722 -y --no-progress
+          }
+          if (-not (Test-Path $candle)) {
+            throw 'WiX Toolset 3.14 not found after install'
+          }
+
+      - name: Build MSI
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          PKG_VERSION: ${{ needs.prepare.outputs.pkg_version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $wixArch = if ('${{ matrix.arch }}' -eq 'amd64') { 'x64' } else { 'arm64' }
+          $outMsi = "dist/docugit-$env:PKG_VERSION-${{ matrix.arch }}.msi"
+          ./scripts/build-msi.ps1 `
+            -Arch $wixArch `
+            -Binary "dist/${{ matrix.artifact }}${{ matrix.ext }}" `
+            -Version $env:PKG_VERSION `
+            -OutMsi $outMsi
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
           path: dist/${{ matrix.artifact }}${{ matrix.ext }}
+
+      - name: Upload MSI
+        if: runner.os == 'Windows'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docugit-msi-${{ matrix.arch }}
+          path: dist/docugit-*.msi
 
   package:
     needs: [prepare, build]
@@ -113,13 +147,22 @@ jobs:
         with:
           path: dist/bin
 
+      - name: Download MSI artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: docugit-msi-*
+          path: dist/msi
+          merge-multiple: true
+
       - name: Flatten artifacts
         run: |
           mkdir -p release/bin release/install
           # Artifact download drops the executable bit on Unix binaries; do not rely on -executable.
           find dist/bin -mindepth 2 -type f -exec cp {} release/bin/ \;
           find release/bin -type f ! -name '*.exe' -exec chmod +x {} +
+          find dist/msi -name '*.msi' -exec cp {} release/install/ \; 2>/dev/null || true
           ls -la release/bin/
+          ls -la release/install/ || true
 
       - name: Install nfpm
         run: |
@@ -175,34 +218,6 @@ jobs:
               -e "s/@SHA256_LINUX_AMD64@/${SHA_LINUX_AMD64}/g" \
               -e "s/@SHA256_LINUX_ARM64@/${SHA_LINUX_ARM64}/g" \
             packaging/homebrew/docugit.rb.template > Formula/docugit.rb
-
-      - name: Build MSI (linux via wixl)
-        env:
-          PKG_VERSION: ${{ needs.prepare.outputs.pkg_version }}
-          FORCE_WIXL_INSTALL: "1"
-        run: |
-          set -euo pipefail
-          bash scripts/install-wixl.sh
-          export PATH="$HOME/.local/bin:$PATH"
-          export LD_LIBRARY_PATH="$HOME/.local/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-          WIXL_EXTDIR="$(find "$HOME/.local/share" -type f -path '*/ext/ui/bitmaps/bannrbmp.bmp' | head -1 | sed 's|/ui/bitmaps/bannrbmp.bmp||')"
-          if [ -z "$WIXL_EXTDIR" ] || [ ! -d "$WIXL_EXTDIR" ]; then
-            echo "error: wixl UI extension directory not found" >&2
-            exit 1
-          fi
-          MSI_VERSION="$(echo "$PKG_VERSION" | tr '_' '.')"
-          mapfile -t WIXUI_SOURCES < <(grep -v '^#' packaging/msi/docugit-wixui.sources | grep -v '^[[:space:]]*$')
-          for pair in "docugit-windows-amd64:amd64:x64" "docugit-windows-arm64:arm64:arm64"; do
-            IFS=':' read -r bin arch wixl_arch <<< "$pair"
-            if [ -f "release/bin/${bin}.exe" ]; then
-              sed -e "s/@VERSION@/${MSI_VERSION}/g" \
-                  -e "s|@BINARY@|release/bin/${bin}.exe|g" \
-                packaging/msi/docugit.wxs.template > /tmp/docugit.wxs
-              wixl -a "$wixl_arch" --ext ui --extdir "$WIXL_EXTDIR" \
-                -o "release/install/docugit-${PKG_VERSION}-${arch}.msi" \
-                /tmp/docugit.wxs "${WIXUI_SOURCES[@]}"
-            fi
-          done
 
       - name: Create release
         uses: softprops/action-gh-release@v2
