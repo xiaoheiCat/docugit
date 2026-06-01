@@ -36,10 +36,6 @@ const PERSONAL_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
     replacement: `<cp:lastModifiedBy>${TEMPLATE_AUTHOR}</cp:lastModifiedBy>`,
   },
   {
-    pattern: /<mc:AlternateContent[^>]*>[\s\S]*?<\/mc:AlternateContent>/g,
-    replacement: "",
-  },
-  {
     pattern: /<Relationship[^>]*Type="http:\/\/schemas\.openxmlformats\.org\/package\/2006\/relationships\/metadata\/thumbnail"[^>]*\/>/g,
     replacement: "",
   },

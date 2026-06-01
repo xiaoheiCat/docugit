@@ -7,6 +7,7 @@ import { runOpen } from "./commands/open.ts";
 import { runDiff, runStatus, runLog } from "./commands/diff.ts";
 import { runCommit, runMerge } from "./commands/commit.ts";
 import { runName, runRename } from "./commands/name.ts";
+import { runRepair } from "./commands/repair.ts";
 
 const DOCUGIT_COMMANDS = new Set([
   "init",
@@ -15,6 +16,7 @@ const DOCUGIT_COMMANDS = new Set([
   "export",
   "name",
   "rename",
+  "repair",
   "diff",
   "status",
   "log",
@@ -67,6 +69,13 @@ async function main(): Promise<void> {
     .description("Open the document in Office and watch for saves")
     .action(async () => {
       process.exit(await runOpen());
+    });
+
+  program
+    .command("repair")
+    .description("Repair broken OOXML links and content types in the repository")
+    .action(async () => {
+      process.exit(await runRepair());
     });
 
   program

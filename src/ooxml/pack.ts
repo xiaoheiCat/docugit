@@ -61,12 +61,22 @@ export async function listOoxmlParts(repoRoot: string): Promise<string[]> {
 }
 
 export async function packToBuffer(repoRoot: string): Promise<Buffer> {
+  const { repairPartsForPack } = await import("./repair.ts");
   const zip = new JSZip();
-  const parts = sortOoxmlParts(await listOoxmlParts(repoRoot));
+  const listedParts = sortOoxmlParts(await listOoxmlParts(repoRoot));
+  const rawParts = await Promise.all(
+    listedParts.map(async (part) => ({
+      path: normalizePartPath(part),
+      content: await readFile(join(repoRoot, part)),
+    })),
+  );
+  const repairedParts = await repairPartsForPack(repoRoot, rawParts);
+  const parts = sortOoxmlParts(repairedParts.map((part) => part.path)).map(
+    (partPath) => repairedParts.find((part) => normalizePartPath(part.path) === partPath)!,
+  );
 
   for (const part of parts) {
-    const content = await readFile(join(repoRoot, part));
-    zip.file(normalizePartPath(part), content, {
+    zip.file(normalizePartPath(part.path), part.content, {
       // Office rejects ZIPs with explicit directory entries (PowerPoint: "cannot read").
       createFolders: false,
       compression: "DEFLATE",
