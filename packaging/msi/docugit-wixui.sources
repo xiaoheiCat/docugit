@@ -1,8 +1,7 @@
 # wixl-native WiX UI sources (msitools format). Regenerate with: bash scripts/sync-wixui-for-wixl.sh
+# Common.wxs and CancelDlg.wxs are auto-loaded by wixl --ext ui from $extdir/ui/.
 packaging/msi/wixl-ui/WixUI_DocuGit.wxs
-packaging/msi/wixl-ui/Common.wxs
 packaging/msi/wixl-ui/BrowseDlg.wxs
-packaging/msi/wixl-ui/CancelDlg.wxs
 packaging/msi/wixl-ui/DiskCostDlg.wxs
 packaging/msi/wixl-ui/ErrorDlg.wxs
 packaging/msi/wixl-ui/ExitDialog.wxs

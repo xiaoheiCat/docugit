@@ -9,13 +9,15 @@ wixl_version_ok() {
   [[ "$version" =~ 0\.10[5-9] ]] || [[ "$version" =~ 0\.1[1-9] ]]
 }
 
+banner_bmp="${HOME}/.local/share/wixl-${MSITOOLS_VERSION}/ext/ui/bitmaps/bannrbmp.bmp"
+
 if command -v wixl >/dev/null 2>&1; then
   installed_version="$(wixl --version 2>&1 | head -1 || true)"
-  if wixl_version_ok "$installed_version"; then
+  if wixl_version_ok "$installed_version" && [ -f "$banner_bmp" ]; then
     echo "wixl already sufficient: $installed_version"
     exit 0
   fi
-  echo "Replacing outdated wixl: $installed_version"
+  echo "Replacing outdated or incomplete wixl: $installed_version"
 fi
 
 sudo apt-get update
@@ -50,7 +52,6 @@ if ! wixl_version_ok "$installed_version"; then
   exit 1
 fi
 
-banner_bmp="${PREFIX}/share/wixl-${MSITOOLS_VERSION}/ext/ui/bitmaps/bannrbmp.bmp"
 if [ ! -f "$banner_bmp" ]; then
   echo "error: wixl UI bitmaps missing at $banner_bmp" >&2
   exit 1

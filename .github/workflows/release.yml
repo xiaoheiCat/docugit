@@ -184,6 +184,8 @@ jobs:
           export PATH="$HOME/.local/bin:$PATH"
           export LD_LIBRARY_PATH="$HOME/.local/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           MSI_VERSION="$(echo "$PKG_VERSION" | tr '_' '.')"
+          MSITOOLS_VERSION="0.105"
+          WIXL_EXTDIR="$HOME/.local/share/wixl-${MSITOOLS_VERSION}/ext"
           mapfile -t WIXUI_SOURCES < <(grep -v '^#' packaging/msi/docugit-wixui.sources | grep -v '^[[:space:]]*$')
           for pair in "docugit-windows-amd64:amd64" "docugit-windows-arm64:arm64"; do
             bin="${pair%%:*}"
@@ -193,7 +195,9 @@ jobs:
                   -e "s/@ARCH@/$arch/g" \
                   -e "s|@BINARY@|release/bin/${bin}.exe|g" \
                 packaging/msi/docugit.wxs.template > /tmp/docugit.wxs
-              wixl -o "release/install/docugit-${PKG_VERSION}-${arch}.msi" /tmp/docugit.wxs "${WIXUI_SOURCES[@]}"
+              wixl --ext ui --extdir "$WIXL_EXTDIR" \
+                -o "release/install/docugit-${PKG_VERSION}-${arch}.msi" \
+                /tmp/docugit.wxs "${WIXUI_SOURCES[@]}"
             fi
           done
 
