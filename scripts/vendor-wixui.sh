@@ -10,8 +10,8 @@ git clone --depth 1 --filter=blob:none --sparse https://github.com/wixtoolset/wi
 git -C "$TMP/wix3" sparse-checkout set src/ext/UIExtension/wixlib
 
 mkdir -p "$TARGET"
-find "$TARGET" -maxdepth 1 -name '*.wxs' ! -name 'WixUI_DocuGit.wxs' -delete
+find "$TARGET" -maxdepth 1 -name '*.wxs' ! -name 'WixUI_DocuGit.wxs' ! -name 'Common.wxs' -delete
 cp "$TMP/wix3/src/ext/UIExtension/wixlib/"*.wxs "$TARGET/"
 rm -f "$TARGET/WixUI_InstallDir.wxs"
 
-echo "Vendored WiX UI files into $TARGET (WixUI_DocuGit.wxs preserved)."
+echo "Vendored WiX UI files into $TARGET (WixUI_DocuGit.wxs and Common.wxs preserved)."

@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the Microsoft Reciprocal License. See LICENSE.TXT file in the project root for full license information. -->
-
+<!-- wixl/msitools: use paths under $prefix/share/wixl-*/ext/ (not WiX3 $(var.bannerBmp)). MS-RL. -->
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
-        <Binary Id="WixUI_Bmp_Banner" SourceFile="!(wix.WixUIBannerBmp=$(var.bannerBmp))" />
-        <Binary Id="WixUI_Bmp_Dialog" SourceFile="!(wix.WixUIDialogBmp=$(var.dialogBmp))" />
-        <Binary Id="WixUI_Ico_Exclam" SourceFile="!(wix.WixUIExclamationIco=$(var.exclamationIco))" />
-        <Binary Id="WixUI_Ico_Info" SourceFile="!(wix.WixUIInfoIco=$(var.infoIco))" />
-        <Binary Id="WixUI_Bmp_New" SourceFile="!(wix.WixUINewIco=$(var.newIco))" />
-        <Binary Id="WixUI_Bmp_Up" SourceFile="!(wix.WixUIUpIco=$(var.upIco))" />
+        <Binary Id="WixUI_Bmp_Banner" SourceFile="ui/bitmaps/bannrbmp.bmp" />
+        <Binary Id="WixUI_Bmp_Dialog" SourceFile="ui/bitmaps/dlgbmp.bmp" />
+        <Binary Id="WixUI_Ico_Exclam" SourceFile="ui/bitmaps/exclamic.ico" />
+        <Binary Id="WixUI_Ico_Info" SourceFile="ui/bitmaps/info.ico" />
+        <Binary Id="WixUI_Bmp_New" SourceFile="ui/bitmaps/New.ico" />
+        <Binary Id="WixUI_Bmp_Up" SourceFile="ui/bitmaps/Up.ico" />
         <WixVariable Id="WixUICostingPopupOptOut" Value="1" Overridable="yes" />
 
         <UI Id="WixUI_Common">

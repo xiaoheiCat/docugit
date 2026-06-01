@@ -50,4 +50,10 @@ if ! wixl_version_ok "$installed_version"; then
   exit 1
 fi
 
+banner_bmp="${PREFIX}/share/wixl-${MSITOOLS_VERSION}/ext/ui/bitmaps/bannrbmp.bmp"
+if [ ! -f "$banner_bmp" ]; then
+  echo "error: wixl UI bitmaps missing at $banner_bmp" >&2
+  exit 1
+fi
+
 echo "Installed: $installed_version"
