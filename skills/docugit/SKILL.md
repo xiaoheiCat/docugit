@@ -32,7 +32,9 @@ cd report-repo
 
 ```bash
 docugit open
-# 在 Office 中编辑保存，Ctrl+C 退出
+# 在 Office 中编辑并保存
+docugit commit
+# 将 open session 应用回仓库并提交
 ```
 
 ### 查看变更

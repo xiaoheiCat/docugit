@@ -10,6 +10,13 @@ export async function runCommit(message: string[]): Promise<number> {
   const repoRoot = getRepoRoot();
   try {
     const config = await readConfig(repoRoot);
+
+    const { applyOpenSessionIfPresent } = await import("../../utils/open-session.ts");
+    const applied = await applyOpenSessionIfPresent(repoRoot);
+    if (applied != null) {
+      console.log(`Applied open session: ${applied}`);
+    }
+
     const { computeSemanticDiff } = await import("../../diff/engine.ts");
     const { mkdtemp, rm } = await import("node:fs/promises");
     const { tmpdir } = await import("node:os");

@@ -66,7 +66,7 @@ async function main(): Promise<void> {
 
   program
     .command("open")
-    .description("Open the document in Office and watch for saves")
+    .description("Pack to .docugit/open-session/ and open in Office")
     .action(async () => {
       process.exit(await runOpen());
     });

@@ -19,7 +19,7 @@ When working in this repository with the maintainer, **always reply in 简体中
 |------|------|
 | `src/cli/` | Commander routing, command handlers |
 | `src/ooxml/` | ZIP unpack/pack + docx/xlsx/pptx semantic layers |
-| `src/diff/`, `src/merge/`, `src/watch/` | Semantic diff/merge, `open` save watcher |
+| `src/diff/`, `src/merge/` | Semantic diff/merge |
 | `src/config/docugit-yml.ts` | `.docugit.yml` + generated document-repo README |
 | `src/utils/skill.ts` | `init` Skill install (`npx skills add …`) + `.agents/skills/docugit` fallback |
 | `templates/{docx,xlsx,pptx}/` | Unpacked blank templates used by `docugit new` |
@@ -71,17 +71,11 @@ Also register new subcommands/flags in [`src/cli/index.ts`](src/cli/index.ts) (C
 - `clone`, `push`, `pull`, `checkout`, etc. → **git passthrough**, not custom handlers.
 - `commit` supports `-m` / `--message` via Commander options (do not parse `argv` manually).
 
-### `docugit commit`
+### `docugit open` / `docugit commit`
 
-- Updates `.docugit.yml` + document README via `prepareCommitMetadata()` **before** `git commit`.
-- Must stay **one commit** (metadata + document changes together). Do not add a second `update metadata` commit.
-
-### `docugit open`
-
-- Packs repo → temp file → opens Office/LibreOffice.
-- Watches saves and applies back to the **unpacked repo**, not the temp binary only.
-- Session ends when the Office file is closed (file-lock polling), not on Ctrl+C messaging.
-- Status lines should read like git (short factual lines / `hint:`), not multi-line “keep this terminal open” warnings unless explicitly requested.
+- `open` packs the repo to `.docugit/open-session/<document>` (listed in `.gitignore`), opens it with the OS default app, and returns immediately.
+- `commit` applies the open-session file into the unpacked repo when present, updates `.docugit.yml` + README via `prepareCommitMetadata()`, then runs `git add` + `git commit`.
+- Must stay **one commit** (metadata + document changes together). No save watcher or wait-for-app-exit loop.
 
 ### `docugit init` / `docugit new`
 

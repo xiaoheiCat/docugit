@@ -79,20 +79,16 @@ docugit new docx "我的文档" -d ./my-doc
 # 克隆远程文档仓库
 docugit clone https://github.com/org/doc-repo.git
 
-# 在 Office 中打开并编辑
+# 在 Office 中编辑
 docugit open
 
-# 查看语义 diff
-docugit diff
-docugit diff --html    # 浏览器报告（临时目录 + 自动打开）
-docugit diff --json    # JSON 结构化输出
-
-# 导出为 Office 文件
-docugit export
-docugit export ./output.docx
-
-# 提交（自动生成语义摘要）
+# 在 Office 中保存后，提交以应用 open session 并记录变更
 docugit commit
+
+# 语义 diff 与导出
+docugit diff
+docugit diff --html
+docugit export
 
 # 合并分支（三路 merge）
 docugit merge feature-branch
@@ -136,14 +132,14 @@ my-doc/
 | `docugit init <file>` | 从 Office 文件初始化仓库 |
 | `docugit new <type> <name>` | 创建空白 docx/xlsx/pptx 仓库 |
 | `docugit clone <url>` | 克隆远程仓库 |
-| `docugit open` | 在 Office 中打开并监听保存 |
+| `docugit open` | 打包到 `.docugit/open-session/` 并在 Office 中打开 |
 | `docugit export [path]` | 导出 Office 文件（默认 `../<文档名>`） |
 | `docugit name` | 查看文档文件名 |
 | `docugit rename <name>` | 修改文档文件名 |
 | `docugit diff [--html\|--json]` | 语义 diff |
 | `docugit status` | 状态 + 语义摘要 |
 | `docugit log` | 提交历史 |
-| `docugit commit [-m msg]` | 提交 + 语义摘要 |
+| `docugit commit [-m msg]` | 应用 open session 后提交并生成语义摘要 |
 | `docugit merge <branch> [--html]` | 三路 merge |
 | `docugit <any-git-cmd>` | 兼容其他的任意 Git 命令！(需要系统安装有 Git) |
 

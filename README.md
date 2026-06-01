@@ -79,20 +79,16 @@ docugit new docx "My Document" -d ./my-doc
 # Clone a remote document repository
 docugit clone https://github.com/org/doc-repo.git
 
-# Open and edit in Office
+# Open in Office for editing
 docugit open
+
+# Save in Office, then commit to apply open session + record changes
+docugit commit
 
 # Semantic diff
 docugit diff
-docugit diff --html    # browser report (temp dir + auto open)
-docugit diff --json    # structured JSON output
-
-# Export to an Office file
+docugit diff --html
 docugit export
-docugit export ./output.docx
-
-# Commit (auto semantic summary)
-docugit commit
 
 # Three-way merge
 docugit merge feature-branch
@@ -136,14 +132,14 @@ my-doc/
 | `docugit init <file>` | Initialize a repo from an Office file |
 | `docugit new <type> <name>` | Create a blank docx/xlsx/pptx repo |
 | `docugit clone <url>` | Clone a remote repository |
-| `docugit open` | Open in Office and watch for saves |
+| `docugit open` | Pack to `.docugit/open-session/` and open in Office |
 | `docugit export [path]` | Export an Office file (default: `../<document>`) |
 | `docugit name` | Show document filename |
 | `docugit rename <name>` | Rename document filename |
 | `docugit diff [--html\|--json]` | Semantic diff |
 | `docugit status` | Status + semantic summary |
 | `docugit log` | Commit history |
-| `docugit commit [-m msg]` | Commit + semantic summary |
+| `docugit commit [-m msg]` | Apply open session, then commit with semantic summary |
 | `docugit merge <branch> [--html]` | Three-way merge |
 | `docugit <any-git-cmd>` | Any other Git command (requires Git installed) |
 
