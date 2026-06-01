@@ -31,8 +31,6 @@ docugit --version
 
 ### Homebrew
 
-本仓库自带 Homebrew tap（`Formula/docugit.rb`）。因仓库名不是 `homebrew-*`，需要显式传入 GitHub 地址：
-
 ```bash
 brew tap xiaoheiCat/docugit https://github.com/xiaoheiCat/docugit
 brew install docugit
