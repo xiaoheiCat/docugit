@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { initRepoFromFile, newRepo, exportDocument, getRepoRoot } from "../../utils/repo.ts";
+import { initRepoFromFile, newRepo, exportDocument, getRepoRoot, resolveNewRepoTarget } from "../../utils/repo.ts";
 import type { DocumentType } from "../../config/docugit-yml.ts";
 
 export async function runInit(file: string, dir?: string): Promise<number> {
@@ -15,8 +15,8 @@ export async function runInit(file: string, dir?: string): Promise<number> {
 }
 
 export async function runNew(type: DocumentType, name: string, dir?: string): Promise<number> {
-  const target = resolve(dir ?? ".");
   try {
+    const target = await resolveNewRepoTarget(dir ?? ".", name, type);
     await newRepo(type, target, name);
     console.log(`Created ${type} document repository: ${target}`);
     return 0;

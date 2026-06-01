@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join, dirname, resolve } from "node:path";
 import {
   createDefaultConfig,
@@ -64,6 +64,42 @@ export async function initRepoFromFile(
 
   runGit(["add", "."], targetDir);
   runGit(["commit", "-m", `docugit: init ${originalName}`], targetDir);
+}
+
+async function isDirectoryEmpty(dir: string): Promise<boolean> {
+  try {
+    const entries = await readdir(dir);
+    return entries.length === 0;
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      return true;
+    }
+    throw err;
+  }
+}
+
+function documentBaseName(name: string, type: DocumentType): string {
+  const filename = formatDocumentFilename(normalizeDocumentName(name, type), type);
+  const ext = `.${type}`;
+  return filename.endsWith(ext) ? filename.slice(0, -ext.length) : filename;
+}
+
+/** Empty `-d` dir gets the repo; non-empty dirs get `<document-base>/` underneath. */
+export async function resolveNewRepoTarget(
+  parentDir: string,
+  name: string,
+  type: DocumentType,
+): Promise<string> {
+  const parent = resolve(parentDir);
+  if (await isDirectoryEmpty(parent)) {
+    return parent;
+  }
+
+  const subdir = join(parent, documentBaseName(name, type));
+  if (!(await isDirectoryEmpty(subdir))) {
+    throw new Error(`fatal: ${subdir} already exists and is not empty`);
+  }
+  return subdir;
 }
 
 export async function newRepo(
