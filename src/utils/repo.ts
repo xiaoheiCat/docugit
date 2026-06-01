@@ -34,15 +34,11 @@ export async function initRepoFromFile(
   await mkdir(targetDir, { recursive: true });
   await unpackFromFile(sourceFile, targetDir);
 
-  const { repairOoxmlPackage, summarizeRepair } = await import("../ooxml/repair.ts");
-  const repair = await repairOoxmlPackage(targetDir, {
+  const { repairOoxmlPackage } = await import("../ooxml/repair.ts");
+  await repairOoxmlPackage(targetDir, {
     sourceFileDir: resolve(dirname(sourceFile)),
     documentType: type,
   });
-  const summary = summarizeRepair(repair);
-  if (summary !== "no repairs needed") {
-    console.warn(`Repaired on init: ${summary}.`);
-  }
 
   const originalName = sourceFile.split(/[/\\]/).pop() ?? `document.${type}`;
   const config = createDefaultConfig(type, originalName, authors);
