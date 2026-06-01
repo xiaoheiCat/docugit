@@ -31,8 +31,6 @@ docugit --version
 
 ### Homebrew
 
-This repo includes a Homebrew tap (`Formula/docugit.rb`). Because the repository is not named `homebrew-*`, pass the GitHub URL explicitly:
-
 ```bash
 brew tap xiaoheiCat/docugit https://github.com/xiaoheiCat/docugit
 brew install docugit
