@@ -2,11 +2,15 @@ import { watch } from "chokidar";
 import open from "open";
 import { open as fsOpen } from "node:fs/promises";
 import { platform } from "node:os";
-import { join, basename } from "node:path";
+import { basename } from "node:path";
 import { applyPackedChanges } from "../merge/three-way.ts";
 import { packToFile } from "../ooxml/pack.ts";
 import { readConfig } from "../config/docugit-yml.ts";
-import { writeTempFile } from "../utils/temp.ts";
+import {
+  ensureOfficeWritable,
+  getOpenSessionDir,
+  prepareOpenSessionFile,
+} from "../utils/open-session.ts";
 
 export interface OpenSessionOptions {
   repoRoot: string;
@@ -73,8 +77,9 @@ export async function openDocumentSession(options: OpenSessionOptions): Promise<
     ? config.document.originalName
     : `${config.document.originalName}.${ext}`;
 
-  const { path: filePath } = await writeTempFile("docugit-open-", filename, "");
+  const filePath = await prepareOpenSessionFile(options.repoRoot, filename);
   await packToFile(options.repoRoot, filePath);
+  await ensureOfficeWritable(filePath);
 
   const office = getOfficeCommand(ext);
   if (office) {
@@ -135,5 +140,5 @@ export async function openDocumentSession(options: OpenSessionOptions): Promise<
 }
 
 export function getOpenTempPath(repoRoot: string): string {
-  return join(repoRoot, ".docugit", "open-session");
+  return getOpenSessionDir(repoRoot);
 }
