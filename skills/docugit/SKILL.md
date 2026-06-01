@@ -66,7 +66,7 @@ docugit export ./final.docx
 
 ```bash
 docugit name
-docugit rename "新版计划.docx"
+docugit rename "新版计划"
 docugit commit -m "rename document"
 ```
 

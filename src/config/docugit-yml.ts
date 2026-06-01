@@ -54,15 +54,26 @@ export function normalizeDocumentName(name: string, type: DocumentType): string 
     throw new Error("fatal: document name must not contain path separators");
   }
 
-  const detected = detectDocumentType(trimmed);
-  if (detected) {
-    if (detected !== type) {
-      throw new Error(`fatal: document name extension must be .${type}`);
+  const ext = `.${type}`;
+  const lastDot = trimmed.lastIndexOf(".");
+  if (lastDot !== -1) {
+    const base = trimmed.slice(0, lastDot);
+    const suffix = trimmed.slice(lastDot + 1).toLowerCase();
+
+    if (!base) {
+      throw new Error("fatal: document name must not be empty");
     }
-    return trimmed;
+
+    if (suffix === type) {
+      return `${base}${ext}`;
+    }
+
+    if (suffix === "docx" || suffix === "xlsx" || suffix === "pptx") {
+      throw new Error("fatal: cannot change document extension");
+    }
   }
 
-  return `${trimmed}.${type}`;
+  return `${trimmed}${ext}`;
 }
 
 export async function readConfig(repoRoot: string): Promise<DocuGitConfig> {
