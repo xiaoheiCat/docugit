@@ -45,7 +45,7 @@ There is no test suite in this repo yet; do not assume `bun test` exists.
 Adding or changing a user-facing command, flag, or workflow is **not done** until docs are updated in both places:
 
 1. **[`skills/docugit/SKILL.md`](skills/docugit/SKILL.md)** — English-oriented agent doc: when to use it, workflow examples, flags, and the command reference table (`## 命令参考` + relevant workflow sections).
-2. **[`README.md`](README.md)** — Chinese user doc: **快速开始** examples if the happy path changes, and the **命令一览** table (one row per command/flag users need to discover).
+2. **[`README.md`](README.md)** (English) and **[`README.zh.md`](README.zh.md)** (Chinese): **Quick start** / **快速开始** examples if the happy path changes, and the **Commands** / **命令一览** tables (one row per command/flag users need to discover). Keep both in sync when adding commands.
 
 Also register new subcommands/flags in [`src/cli/index.ts`](src/cli/index.ts) (Commander `.command()` / `.option()`). Do not ship CLI-only features with stale SKILL or README.
 
@@ -61,7 +61,7 @@ Also register new subcommands/flags in [`src/cli/index.ts`](src/cli/index.ts) (C
   - Success paths are often **silent**; when a line is needed, mirror git init-style facts, e.g. `Initialized DocuGit repository in <path>` not celebratory prose
   - Avoid banners (`IMPORTANT:`), exclamation marks, and “DocuGit is …” narration unless the user explicitly asks
   - When wrapping git failures, keep git’s own stderr; do not replace with friendly rewrites
-- Project README is Chinese; extend **快速开始** / **命令一览** when adding commands (see **New features** above). Do not rewrite unrelated README sections.
+- Project READMEs: `README.md` (English, GitHub default) + `README.zh.md` (Chinese). Extend command tables in **both** when adding commands (see **New features** above). Do not rewrite unrelated sections.
 - Version at runtime: `src/version.ts` (`dev` locally; CI injects via `--define process.env.DOCUGIT_VERSION=…`).
 
 ## Behavior agents often get wrong
@@ -115,13 +115,13 @@ Do not move OOXML parts into a subdirectory. Reserved root files: `.docugit.yml`
 ## What not to do
 
 - Do not revert user-chosen layout (`skills/docugit/`, flat OOXML document repos, English CLI strings).
-- Do not merge CLI features without updating `skills/docugit/SKILL.md` and `README.md` **命令一览**.
+- Do not merge CLI features without updating `skills/docugit/SKILL.md`, `README.md`, and `README.zh.md` command tables.
 - Do not reimplement `docugit clone`; keep git passthrough.
 - Do not add heavy abstractions for one-off CLI helpers.
 - Do not edit Cursor plan files unless the user asks.
 
 ## Related docs
 
-- Human docs: [`README.md`](README.md) (Chinese)
+- Human docs: [`README.md`](README.md) (English), [`README.zh.md`](README.zh.md) (Chinese)
 - Agent usage of the **product**: [`skills/docugit/SKILL.md`](skills/docugit/SKILL.md)
 - License: GPL-3.0

@@ -1,19 +1,21 @@
 # DocuGit
 
-基于 Office OpenXML 的 Git 文档版本控制 CLI。
+[简体中文](README.zh.md)
 
-DocuGit 将 `.docx` / `.xlsx` / `.pptx` 解包为 Git 仓库内容，在 Git 之上提供**人类可读的语义 diff、三路 merge、Office 编辑回写**等能力。
+Git-based version control CLI for Office OpenXML documents.
 
-本项目依赖 Git 的大量能力，使用前请先安装 [Git](https://git-scm.com)。
+DocuGit unpacks `.docx`, `.xlsx`, and `.pptx` files into a Git repository and adds **human-readable semantic diff, three-way merge, and Office edit round-tripping** on top of Git.
 
-## 安装
+This project relies heavily on Git. Install [Git](https://git-scm.com) before use.
 
-### 裸二进制（推荐快速试用）
+## Install
 
-从 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) 下载对应平台二进制，加入 `PATH`：
+### Standalone binary (quickest try)
 
-| 平台 | 文件 |
-|------|------|
+Download the binary for your platform from [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) and add it to `PATH`:
+
+| Platform | File |
+|----------|------|
 | macOS (Apple Silicon) | `docugit-darwin-arm64` |
 | macOS (Intel) | `docugit-darwin-amd64` |
 | Linux amd64 | `docugit-linux-amd64` |
@@ -33,9 +35,9 @@ docugit --version
 brew install ./release/linuxbrew/docugit.rb
 ```
 
-### APT deb（Linux）
+### APT deb (Linux)
 
-从 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases/latest) 下载 `install/` 目录下对应架构的 `.deb`（文件名形如 `docugit_<version>_<arch>.deb`），然后：
+Download the `.deb` for your architecture from the `install/` directory on [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases/latest) (filename like `docugit_<version>_<arch>.deb`), then:
 
 ```bash
 sudo apt install ./docugit_<version>_<arch>.deb
@@ -43,64 +45,64 @@ sudo apt install ./docugit_<version>_<arch>.deb
 
 ### Windows MSI
 
-双击 `docugit-{version}-{arch}.msi` 安装。
+Run `docugit-{version}-{arch}.msi`.
 
-### 从源码
+### From source
 
-> 我们使用 Bun 作为运行时。
+> We use Bun as the runtime.
 
 ```bash
 git clone https://github.com/xiaoheiCat/docugit.git
 cd docugit
 bun install
 bun run dev -- --help
-bun run build   # 编译本地二进制到 dist/docugit
+bun run build   # compile local binary to dist/docugit
 ```
 
-## 快速开始
+## Quick start
 
 ```bash
-# 从现有 Office 文件初始化
-docugit init ./合同.docx -d ./合同-repo
+# Initialize from an existing Office file
+docugit init ./contract.docx -d ./contract-repo
 
-# 从空白模板创建
-docugit new docx "我的文档" -d ./my-doc
+# Create from a blank template
+docugit new docx "My Document" -d ./my-doc
 
-# 克隆远程文档仓库
+# Clone a remote document repository
 docugit clone https://github.com/org/doc-repo.git
 
-# 在 Office 中打开并编辑
+# Open and edit in Office
 docugit open
 
-# 查看语义 diff
+# Semantic diff
 docugit diff
-docugit diff --html    # 浏览器报告（临时目录 + 自动打开）
-docugit diff --json    # JSON 结构化输出
+docugit diff --html    # browser report (temp dir + auto open)
+docugit diff --json    # structured JSON output
 
-# 导出为 Office 文件
+# Export to an Office file
 docugit export ./output.docx
 
-# 提交（自动生成语义摘要）
+# Commit (auto semantic summary)
 docugit commit
 
-# 合并分支（三路 merge）
+# Three-way merge
 docugit merge feature-branch
-docugit merge feature-branch --html   # 冲突时打开 HTML 报告
+docugit merge feature-branch --html   # open HTML report on conflicts
 
-# 其他 git 命令透传
+# Other git commands pass through
 docugit push
 docugit pull
 docugit branch
 ```
 
-## 仓库结构
+## Repository layout
 
-一个 DocuGit 仓库 = 一个协作文档：
+One DocuGit repository = one collaborative document:
 
 ```
 my-doc/
-├── .docugit.yml       # DocuGit 配置
-├── README.md          # 自动生成的说明与 Metadata
+├── .docugit.yml       # DocuGit config
+├── README.md          # auto-generated metadata and notes
 ├── [Content_Types].xml
 ├── _rels/
 ├── word/              # docx
@@ -108,35 +110,39 @@ my-doc/
 └── ...
 ```
 
-## 工作流建议
+## Workflow tips
 
-- `main` 分支 = 定稿
-- 功能分支 = 草稿
-- 通过 GitHub PR Review 完成审批
-- 使用 `docugit diff --html` 在 PR 中审查文档变更
+- `main` branch = finalized document
+- Feature branches = drafts
+- Use GitHub PR review for approval
+- Use `docugit diff --html` to review document changes in PRs
 
-## 命令一览
+## Commands
 
-| 命令 | 说明 |
-|------|------|
-| `docugit init <file>` | 从 Office 文件初始化仓库 |
-| `docugit new <type> <name>` | 创建空白 docx/xlsx/pptx 仓库 |
-| `docugit clone <url>` | 克隆远程仓库 |
-| `docugit open` | 在 Office 中打开并监听保存 |
-| `docugit export [path]` | 导出 Office 文件 |
-| `docugit diff [--html\|--json]` | 语义 diff |
-| `docugit status` | 状态 + 语义摘要 |
-| `docugit log` | 提交历史 |
-| `docugit commit [-m msg]` | 提交 + 语义摘要 |
-| `docugit merge <branch> [--html]` | 三路 merge |
-| `docugit <any-git-cmd>` | 兼容其他的任意 Git 命令！(需要系统安装有 Git) |
+| Command | Description |
+|---------|-------------|
+| `docugit init <file>` | Initialize a repo from an Office file |
+| `docugit new <type> <name>` | Create a blank docx/xlsx/pptx repo |
+| `docugit clone <url>` | Clone a remote repository |
+| `docugit open` | Open in Office and watch for saves |
+| `docugit export [path]` | Export an Office file |
+| `docugit diff [--html\|--json]` | Semantic diff |
+| `docugit status` | Status + semantic summary |
+| `docugit log` | Commit history |
+| `docugit commit [-m msg]` | Commit + semantic summary |
+| `docugit merge <branch> [--html]` | Three-way merge |
+| `docugit <any-git-cmd>` | Any other Git command (requires Git installed) |
 
-## 如果你不是人类...
+## For AI agents
 
-使用 DocuGit 的 AI Agent 请参考 [`skills/docugit/SKILL.md`](skills/docugit/SKILL.md)。
+See [`skills/docugit/SKILL.md`](skills/docugit/SKILL.md) for DocuGit agent usage.
 
-若要长期使用，强烈建议安装此 Skill 到 AI Agent 的 Skill 区域: `npx skills add xiaoheiCat/docugit -g -y`
+For long-term use, install the skill into your agent environment:
 
-## 许可证
+```bash
+npx skills add xiaoheiCat/docugit -g -y
+```
+
+## License
 
 GPL-3.0
