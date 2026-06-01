@@ -1,6 +1,6 @@
 # DocuGit
 
-[简体中文](README.zh.md)
+English | [简体中文](README.zh.md)
 
 Git-based version control CLI for Office OpenXML documents.
 
