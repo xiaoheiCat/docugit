@@ -18,15 +18,37 @@ $ErrorActionPreference = 'Stop'
 function ConvertTo-MsiProductVersion {
     param([string]$PkgVersion)
 
-    # PKG_VERSION: 2026.06.01_11.14.29_3d6a44 -> MSI: 2026.6.1.15722
+    # PKG_VERSION: 2026.06.01_11.14.29_3d6a44 -> MSI: 6.6.2114.15722
+    # WiX limits: major/minor < 256, build/revision < 65536.
     if ($PkgVersion -notmatch '^(\d+)\.(\d+)\.(\d+)_(\d+)\.(\d+)\.(\d+)_([0-9a-f]+)$') {
         throw "unsupported PKG_VERSION format for MSI: $PkgVersion"
     }
 
-    $major = [int]$Matches[1]
-    $minor = [int]$Matches[2]
-    $build = [int]$Matches[3]
-    $revision = [Convert]::ToInt32($Matches[7].Substring(0, [Math]::Min(4, $Matches[7].Length)), 16) % 65534
+    $year = [int]$Matches[1]
+    $month = [int]$Matches[2]
+    $day = [int]$Matches[3]
+    $hour = [int]$Matches[4]
+    $minute = [int]$Matches[5]
+    $second = [int]$Matches[6]
+    $sha = $Matches[7]
+
+    $major = $year - 2020
+    if ($major -lt 0 -or $major -ge 256) {
+        throw "PKG_VERSION year out of MSI major range: $year"
+    }
+
+    $minor = $month
+    if ($minor -ge 256) {
+        throw "PKG_VERSION month out of MSI minor range: $month"
+    }
+
+    $build = ($day * 1440) + ($hour * 60) + $minute
+    $revision = [Convert]::ToInt32($sha.Substring(0, [Math]::Min(4, $sha.Length)), 16) % 65536
+
+    if ($build -ge 65536 -or $revision -ge 65536) {
+        throw "computed MSI version field out of range: build=$build revision=$revision"
+    }
+
     return "$major.$minor.$build.$revision"
 }
 
