@@ -26,9 +26,11 @@ sudo apt-get install -y \
   valac pkg-config perl python3-pip
 
 PREFIX="${HOME}/.local"
+LIBDIR="${PREFIX}/lib/x86_64-linux-gnu"
 
 python3 -m pip install --user "meson>=1.4" ninja
 export PATH="${PREFIX}/bin:${PATH}"
+export LD_LIBRARY_PATH="${LIBDIR}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT

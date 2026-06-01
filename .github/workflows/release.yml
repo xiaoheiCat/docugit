@@ -182,6 +182,7 @@ jobs:
         run: |
           bash scripts/install-wixl.sh
           export PATH="$HOME/.local/bin:$PATH"
+          export LD_LIBRARY_PATH="$HOME/.local/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           MSI_VERSION="$(echo "$PKG_VERSION" | tr '_' '.')"
           mapfile -t WIXUI_SOURCES < <(find packaging/msi/wixui -name '*.wxs' | sort)
           for pair in "docugit-windows-amd64:amd64" "docugit-windows-arm64:arm64"; do
