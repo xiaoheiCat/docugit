@@ -132,7 +132,8 @@ my-doc/
 | `docugit init <file>` | 从 Office 文件初始化仓库 |
 | `docugit new <type> <name>` | 创建空白 docx/xlsx/pptx 仓库 |
 | `docugit clone <url>` | 克隆远程仓库 |
-| `docugit open` | 打包到 `.docugit/open-session/` 并在 Office 中打开 |
+| `docugit open` | 在 Office 中打开编辑 |
+| `docugit restore [-y]` | 丢弃 open session |
 | `docugit export [path]` | 导出 Office 文件（默认 `../<文档名>`） |
 | `docugit name` | 查看文档文件名 |
 | `docugit rename <name>` | 修改文档文件名 |

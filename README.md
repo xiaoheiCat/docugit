@@ -132,7 +132,8 @@ my-doc/
 | `docugit init <file>` | Initialize a repo from an Office file |
 | `docugit new <type> <name>` | Create a blank docx/xlsx/pptx repo |
 | `docugit clone <url>` | Clone a remote repository |
-| `docugit open` | Pack to `.docugit/open-session/` and open in Office |
+| `docugit open` | Open in Office for editing |
+| `docugit restore [-y]` | Discard the open session |
 | `docugit export [path]` | Export an Office file (default: `../<document>`) |
 | `docugit name` | Show document filename |
 | `docugit rename <name>` | Rename document filename |

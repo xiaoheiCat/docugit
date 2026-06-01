@@ -39,6 +39,7 @@ export interface OoxmlRepairResult {
   embedded: number;
   skipped: number;
   contentTypes: number;
+  linkAttributesRemoved: number;
   warnings: string[];
 }
 
@@ -238,6 +239,63 @@ function parseRelationships(xml: string): Array<{ full: string; attrs: string }>
   }));
 }
 
+function relsPartForSourcePart(sourcePart: string): string | null {
+  const normalized = normalizePartPath(sourcePart);
+  if (normalized.endsWith(".rels") || normalized === "[Content_Types].xml") return null;
+  const dir = posix.dirname(normalized);
+  const base = posix.basename(normalized);
+  return normalizePartPath(`${dir}/_rels/${base}.rels`);
+}
+
+function internalImageLinkIds(relsXml: string): Set<string> {
+  const ids = new Set<string>();
+  for (const item of parseRelationships(relsXml)) {
+    const rel = parseRelationship(item.full, item.attrs);
+    if (!rel.id || isExternalRelationship(rel)) continue;
+    if (!rel.type.includes("image")) continue;
+    ids.add(rel.id);
+  }
+  return ids;
+}
+
+function stripRLinkAttributes(xml: string, relIds: Iterable<string>): { xml: string; removed: number } {
+  let removed = 0;
+  let nextXml = xml;
+  for (const relId of relIds) {
+    const escaped = relId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`\\sr:link="${escaped}"`, "g");
+    nextXml = nextXml.replace(pattern, () => {
+      removed += 1;
+      return "";
+    });
+  }
+  return { xml: nextXml, removed };
+}
+
+function repairStaleImageLinks(parts: Map<string, Buffer>): number {
+  let removed = 0;
+
+  for (const [part, content] of parts) {
+    if (!part.endsWith(".xml") || part.endsWith(".rels")) continue;
+    const relsPart = relsPartForSourcePart(part);
+    if (!relsPart) continue;
+    const relsContent = parts.get(relsPart);
+    if (!relsContent) continue;
+
+    const linkIds = internalImageLinkIds(relsContent.toString("utf-8"));
+    if (linkIds.size === 0) continue;
+
+    const original = content.toString("utf-8");
+    const stripped = stripRLinkAttributes(original, linkIds);
+    if (stripped.removed > 0) {
+      parts.set(part, Buffer.from(stripped.xml, "utf-8"));
+      removed += stripped.removed;
+    }
+  }
+
+  return removed;
+}
+
 async function embedExternalRelationshipsInXml(
   xml: string,
   relsPart: string,
@@ -318,7 +376,7 @@ export async function repairContentTypes(repoRoot: string): Promise<number> {
 export async function repairExternalRelationships(
   repoRoot: string,
   ctx: Omit<RepairContext, "repoRoot">,
-): Promise<Pick<OoxmlRepairResult, "embedded" | "skipped" | "warnings">> {
+): Promise<Pick<OoxmlRepairResult, "embedded" | "skipped" | "warnings" | "linkAttributesRemoved">> {
   const fullCtx: RepairContext = { repoRoot, ...ctx };
   const parts = new Map<string, Buffer>();
 
@@ -342,6 +400,8 @@ export async function repairExternalRelationships(
     warnings.push(...result.warnings);
   }
 
+  const linkAttributesRemoved = repairStaleImageLinks(parts);
+
   for (const [part, content] of parts) {
     const repoPath = join(repoRoot, part);
     const original = await readFile(repoPath).catch(() => null);
@@ -353,7 +413,7 @@ export async function repairExternalRelationships(
     }
   }
 
-  return { embedded, skipped, warnings };
+  return { embedded, skipped, warnings, linkAttributesRemoved };
 }
 
 export async function repairOoxmlPackage(
@@ -372,6 +432,7 @@ export async function repairOoxmlPackage(
     embedded: external.embedded,
     skipped: external.skipped,
     contentTypes,
+    linkAttributesRemoved: external.linkAttributesRemoved,
     warnings: external.warnings,
   };
 }
@@ -398,6 +459,8 @@ export async function repairPartsForPack(repoRoot: string, parts: PackPart[]): P
     contentTypes += result.contentTypes;
   }
 
+  repairStaleImageLinks(byPath);
+
   const contentTypesPart = byPath.get("[Content_Types].xml");
   if (contentTypesPart) {
     const { xml, fixed } = patchContentTypesXml(contentTypesPart.toString("utf-8"));
@@ -414,6 +477,9 @@ export function summarizeRepair(result: OoxmlRepairResult): string {
   const bits: string[] = [];
   if (result.embedded > 0) bits.push(`${result.embedded} external file(s) embedded`);
   if (result.skipped > 0) bits.push(`${result.skipped} external link(s) skipped`);
+  if (result.linkAttributesRemoved > 0) {
+    bits.push(`${result.linkAttributesRemoved} stale r:link attribute(s) removed`);
+  }
   if (result.contentTypes > 0) bits.push(`${result.contentTypes} content-type fix(es)`);
   return bits.length > 0 ? bits.join(", ") : "no repairs needed";
 }

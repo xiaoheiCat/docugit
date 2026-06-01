@@ -71,10 +71,11 @@ Also register new subcommands/flags in [`src/cli/index.ts`](src/cli/index.ts) (C
 - `clone`, `push`, `pull`, `checkout`, etc. → **git passthrough**, not custom handlers.
 - `commit` supports `-m` / `--message` via Commander options (do not parse `argv` manually).
 
-### `docugit open` / `docugit commit`
+### `docugit open` / `docugit commit` / `docugit restore`
 
-- `open` packs the repo to `.docugit/open-session/<document>` (listed in `.gitignore`), opens it with the OS default app, and returns immediately.
+- `open` packs the repo to `.docugit/open-session/<document>` only when that file does not exist; otherwise it opens the existing session without overwriting. Opens with the OS default app and returns immediately.
 - `commit` applies the open-session file into the unpacked repo when present, updates `.docugit.yml` + README via `prepareCommitMetadata()`, then runs `git add` + `git commit`.
+- `restore` deletes the open-session file after `[y/N]?` confirmation (or `-y`). Next `open` repacks from the repository.
 - Must stay **one commit** (metadata + document changes together). No save watcher or wait-for-app-exit loop.
 
 ### `docugit init` / `docugit new`

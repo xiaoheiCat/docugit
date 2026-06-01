@@ -8,11 +8,13 @@ import { runDiff, runStatus, runLog } from "./commands/diff.ts";
 import { runCommit, runMerge } from "./commands/commit.ts";
 import { runName, runRename } from "./commands/name.ts";
 import { runRepair } from "./commands/repair.ts";
+import { runRestore } from "./commands/restore.ts";
 
 const DOCUGIT_COMMANDS = new Set([
   "init",
   "new",
   "open",
+  "restore",
   "export",
   "name",
   "rename",
@@ -66,9 +68,17 @@ async function main(): Promise<void> {
 
   program
     .command("open")
-    .description("Pack to .docugit/open-session/ and open in Office")
+    .description("Open the document in Office for editing")
     .action(async () => {
       process.exit(await runOpen());
+    });
+
+  program
+    .command("restore")
+    .description("Discard the open-session file")
+    .option("-y", "Discard without confirmation")
+    .action(async (opts: { y?: boolean }) => {
+      process.exit(await runRestore(Boolean(opts.y)));
     });
 
   program

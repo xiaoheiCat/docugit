@@ -1,4 +1,4 @@
-import { mkdir, stat } from "node:fs/promises";
+import { mkdir, stat, unlink } from "node:fs/promises";
 import { join } from "node:path";
 import open from "open";
 import { readConfig, formatDocumentFilename } from "../config/docugit-yml.ts";
@@ -15,11 +15,29 @@ export async function getOpenSessionFilePath(repoRoot: string): Promise<string> 
   return join(getOpenSessionDir(repoRoot), filename);
 }
 
-export async function syncOpenSessionFromRepo(repoRoot: string): Promise<string> {
+export async function ensureOpenSessionFromRepo(
+  repoRoot: string,
+): Promise<{ filePath: string; created: boolean }> {
   const filePath = await getOpenSessionFilePath(repoRoot);
   await mkdir(getOpenSessionDir(repoRoot), { recursive: true });
+
+  if (await openSessionFileExists(repoRoot)) {
+    return { filePath, created: false };
+  }
+
   await packToFile(repoRoot, filePath);
-  return filePath;
+  return { filePath, created: true };
+}
+
+export async function removeOpenSessionFile(repoRoot: string): Promise<boolean> {
+  const filePath = await getOpenSessionFilePath(repoRoot);
+  try {
+    await stat(filePath);
+  } catch {
+    return false;
+  }
+  await unlink(filePath);
+  return true;
 }
 
 export async function openSessionFileExists(repoRoot: string): Promise<boolean> {

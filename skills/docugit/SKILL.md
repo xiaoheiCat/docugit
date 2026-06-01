@@ -34,7 +34,8 @@ cd report-repo
 docugit open
 # 在 Office 中编辑并保存
 docugit commit
-# 将 open session 应用回仓库并提交
+docugit restore
+# 丢弃未提交的 open session，下次 open 会从仓库重新打包
 ```
 
 ### 查看变更
@@ -80,6 +81,7 @@ docugit commit -m "rename document"
 | `new` | `<docx\|xlsx\|pptx> <name> [-d dir]` |
 | `clone` | `<url> [dir]` |
 | `open` | |
+| `restore` | `[-y]` |
 | `export` | `[output]` (default: `../<document>`) |
 | `name` | |
 | `rename` | `<name>` |
