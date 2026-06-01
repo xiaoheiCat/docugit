@@ -10,7 +10,7 @@
       <Directory Id="ProgramFiles64Folder">
         <Directory Id="INSTALLDIR" Name="DocuGit">
           <Component Id="MainExecutable" Guid="*" Win64="yes">
-            <File Id="DocuGitExe" Source="@BINARY@" KeyPath="yes" />
+            <File Id="DocuGitExe" Source="@BINARY@" Name="docugit.exe" KeyPath="yes" />
             <Environment
               Id="DocuGitPath"
               Name="PATH"
