@@ -41,7 +41,9 @@ export async function listOoxmlParts(repoRoot: string): Promise<string[]> {
   async function walk(dir: string): Promise<void> {
     const entries = await readdir(dir, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.name.startsWith(".")) continue;
+      // DocuGit metadata lives at repo root (.docugit.yml, .agents/, …).
+      // Do not skip OOXML relationship parts such as _rels/.rels (filename starts with ".").
+      if (dir === repoRoot && entry.name.startsWith(".")) continue;
       if (dir === repoRoot && NON_OOXML_ROOT_FILES.has(entry.name)) continue;
 
       const fullPath = join(dir, entry.name);

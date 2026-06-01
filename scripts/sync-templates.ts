@@ -44,6 +44,10 @@ const PERSONAL_PATTERNS: Array<{ pattern: RegExp; replacement: string }> = [
     replacement: "",
   },
   {
+    pattern: /<Relationship[^>]*Type="http:\/\/schemas\.openxmlformats\.org\/package\/2006\/relationships\/metadata\/thumbnail"[^>]*><\/Relationship>/g,
+    replacement: "",
+  },
+  {
     pattern: /<Default Extension="jpeg" ContentType="image\/jpeg"\/>/g,
     replacement: "",
   },
