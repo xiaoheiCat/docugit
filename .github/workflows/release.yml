@@ -135,10 +135,13 @@ jobs:
             bin="${pair%%:*}"
             arch="${pair##*:}"
             if [ -f "release/bin/$bin" ]; then
-              VERSION="$deb_version" ARCH="$arch" BINARY="release/bin/$bin" \
-                nfpm pkg --config packaging/deb/nfpm.yaml \
-                  --packager deb \
-                  --target "release/install/docugit_${PKG_VERSION}_${arch}.deb"
+              sed -e "s|\${VERSION}|${deb_version}|g" \
+                  -e "s|\${ARCH}|${arch}|g" \
+                  -e "s|\${BINARY}|release/bin/${bin}|g" \
+                packaging/deb/nfpm.yaml > "/tmp/nfpm-${arch}.yaml"
+              nfpm pkg --config "/tmp/nfpm-${arch}.yaml" \
+                --packager deb \
+                --target "release/install/docugit_${PKG_VERSION}_${arch}.deb"
               built=$((built + 1))
             fi
           done
