@@ -130,16 +130,15 @@ jobs:
         run: |
           set -euo pipefail
           built=0
+          deb_version="$(echo "$PKG_VERSION" | tr '_' '-')"
           for pair in "docugit-linux-amd64:amd64" "docugit-linux-arm64:arm64"; do
             bin="${pair%%:*}"
             arch="${pair##*:}"
             if [ -f "release/bin/$bin" ]; then
-              nfpm pkg --config packaging/deb/nfpm.yaml \
-                --packager deb \
-                --target "release/install/docugit_${PKG_VERSION}_${arch}.deb" \
-                --env VERSION="$PKG_VERSION" \
-                --env ARCH="$arch" \
-                --env BINARY="release/bin/$bin"
+              VERSION="$deb_version" ARCH="$arch" BINARY="release/bin/$bin" \
+                nfpm pkg --config packaging/deb/nfpm.yaml \
+                  --packager deb \
+                  --target "release/install/docugit_${PKG_VERSION}_${arch}.deb"
               built=$((built + 1))
             fi
           done
