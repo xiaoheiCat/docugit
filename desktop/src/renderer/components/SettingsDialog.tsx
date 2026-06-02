@@ -92,7 +92,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
             </div>
             <div className="settings-update-row">
               <span className="settings-update-row__label">{t("settings.updates")}</span>
-              <p className="settings-update-row__status">{updateStatusText}</p>
+              <span className="settings-update-row__status">{updateStatusText}</span>
               <GlassButton
                 className="settings-update-row__action"
                 disabled={checkingUpdate}

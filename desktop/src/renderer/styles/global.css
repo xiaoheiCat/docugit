@@ -572,10 +572,15 @@ html[data-platform="darwin"] .top-nav {
   font-size: 0.85rem;
 }
 
+.settings-list .settings-update-row {
+  padding: 8px 0;
+}
+
 .settings-update-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  padding: 8px 0;
 }
 
 .settings-update-row__label {
@@ -584,22 +589,27 @@ html[data-platform="darwin"] .top-nav {
   margin-bottom: 0;
   color: var(--muted);
   font-size: 0.88rem;
+  line-height: 1.25;
 }
 
 .settings-update-row__status {
   flex: 1;
   min-width: 0;
-  margin: 0;
   font-size: 0.88rem;
-  line-height: 1.4;
+  line-height: 1.25;
   color: var(--muted);
 }
 
-.settings-update-row__action {
+.settings-update-row__action.glass-button {
   flex-shrink: 0;
-  padding: 6px 14px;
-  font-size: 0.85rem;
-  white-space: nowrap;
+  border-radius: 8px;
+}
+
+.settings-update-row__action .glass-button-content {
+  padding: 2px 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .dialog-stack--narrow {
