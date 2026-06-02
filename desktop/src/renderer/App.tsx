@@ -333,6 +333,7 @@ export default function App(): React.JSX.Element {
           workspaces={workspaces}
           onClose={() => setOpenTabDialog(false)}
           onPick={(entry) => attachWorkspace(entry)}
+          onRemoveWorkspace={setRemoveTarget}
         />
 
         <RepoDialogs
