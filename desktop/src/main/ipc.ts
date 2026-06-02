@@ -1,4 +1,9 @@
-import { ipcMain, dialog, BrowserWindow } from "electron";
+import { ipcMain, dialog, BrowserWindow, app } from "electron";
+import {
+  checkForUpdates,
+  getUpdateStatus,
+  quitAndInstall,
+} from "./auto-updater.ts";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import {
@@ -137,5 +142,17 @@ export function registerIpcHandlers(): void {
     const settings = await readSettings();
     settings[key] = value;
     await writeSettings(settings);
+  });
+
+  ipcMain.handle("app:getVersion", () => app.getVersion());
+
+  ipcMain.handle("update:status", () => getUpdateStatus());
+
+  ipcMain.handle("update:check", () => {
+    checkForUpdates();
+  });
+
+  ipcMain.handle("update:quitAndInstall", () => {
+    quitAndInstall();
   });
 }

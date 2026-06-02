@@ -8,6 +8,7 @@ import { OpenTabDialog } from "./components/OpenTabDialog.tsx";
 import { NoticeBanner, type NoticeState } from "./components/NoticeBanner.tsx";
 import { RepoTabButton, RepoTabContent } from "./components/RepoTab.tsx";
 import { SettingsDialog } from "./components/SettingsDialog.tsx";
+import { UpdateBanner } from "./components/UpdateBanner.tsx";
 import { RepoDialogs, type DialogKind } from "./views/RepoDialogs.tsx";
 import { WelcomeView } from "./views/WelcomeView.tsx";
 import { formatWorkspaceActionError } from "./utils/format-feedback.ts";
@@ -277,6 +278,7 @@ export default function App(): React.JSX.Element {
           </div>
         </header>
 
+        <UpdateBanner />
         <NoticeBanner notice={notice} onDismiss={() => setNotice(null)} />
 
         <div className="tab-bar no-drag">

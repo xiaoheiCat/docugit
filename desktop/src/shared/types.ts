@@ -124,6 +124,16 @@ export interface PickSaveFileOptions {
   extension?: DocumentType;
 }
 
+export type UpdateStatus =
+  | { state: "idle" }
+  | { state: "checking" }
+  | { state: "available"; version: string }
+  | { state: "not-available" }
+  | { state: "downloading"; percent: number }
+  | { state: "downloaded"; version: string }
+  | { state: "error"; message: string }
+  | { state: "dev-skipped" };
+
 export interface DocuGitDesktopApi {
   readonly platform: NodeJS.Platform;
   listWorkspaces(): Promise<WorkspaceEntry[]>;
@@ -142,6 +152,10 @@ export interface DocuGitDesktopApi {
   getRuntimeInfo(): Promise<RuntimeInfo>;
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
+  getAppVersion(): Promise<string>;
+  checkForUpdates(): Promise<void>;
+  quitAndInstall(): Promise<void>;
+  onUpdateStatus(listener: (status: UpdateStatus) => void): () => void;
 }
 
 declare global {

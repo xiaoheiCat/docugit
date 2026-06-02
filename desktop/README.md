@@ -35,5 +35,3 @@ cp dist/docugit desktop/resources/bin/docugit   # macOS/Linux
 # docugit.exe on Windows
 bun run desktop:pack
 ```
-
-Release CI copies platform `docugit*` binaries into `desktop/resources/bin/` before running `electron-builder`.

@@ -566,6 +566,42 @@ html[data-platform="darwin"] .top-nav {
   padding: 4px 8px;
 }
 
+.notice-banner__action {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.settings-update-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-update-row__label {
+  flex-shrink: 0;
+  display: inline;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.settings-update-row__status {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.settings-update-row__action {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
 .dialog-stack--narrow {
   width: min(440px, 100%);
 }

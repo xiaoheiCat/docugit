@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n/index.ts";
-import type { RuntimeInfo } from "../../shared/types.ts";
+import type { RuntimeInfo, UpdateStatus } from "../../shared/types.ts";
 import { GlassButton, GlassPanel } from "./GlassPanel.tsx";
 
 interface SettingsDialogProps {
@@ -14,15 +14,44 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [language, setLanguage] = useState(i18n.language);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [appVersion, setAppVersion] = useState<string | null>(null);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
 
   useEffect(() => {
     if (open) {
       void window.docugitDesktop.getRuntimeInfo().then(setRuntime);
+      void window.docugitDesktop.getAppVersion().then(setAppVersion);
       void window.docugitDesktop.getSetting("language").then((value) => {
         if (value) setLanguage(value);
       });
+      setUpdateMessage(null);
+      setCheckingUpdate(false);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !checkingUpdate) {
+      return;
+    }
+    return window.docugitDesktop.onUpdateStatus((status: UpdateStatus) => {
+      if (status.state === "checking") {
+        return;
+      }
+      setCheckingUpdate(false);
+      if (status.state === "not-available") {
+        setUpdateMessage(t("update.upToDate"));
+      } else if (status.state === "dev-skipped") {
+        setUpdateMessage(t("update.devSkipped"));
+      } else if (status.state === "error") {
+        setUpdateMessage(t("update.error", { message: status.message }));
+      } else if (status.state === "available") {
+        setUpdateMessage(t("update.available", { version: status.version }));
+      } else if (status.state === "downloaded") {
+        setUpdateMessage(t("update.ready", { version: status.version }));
+      }
+    });
+  }, [open, checkingUpdate, t]);
 
   if (!open) return null;
 
@@ -32,6 +61,17 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
     localStorage.setItem("docugit-desktop.lang", next);
     await window.docugitDesktop.setSetting("language", next);
   }
+
+  async function handleCheckForUpdates(): Promise<void> {
+    setUpdateMessage(null);
+    setCheckingUpdate(true);
+    await window.docugitDesktop.checkForUpdates();
+  }
+
+  const updateStatusText = checkingUpdate
+    ? t("update.checking")
+    : updateMessage ??
+      (appVersion === "0.0.0-dev" ? t("update.devSkipped") : t("update.idle"));
 
   return (
     <div className="dialog-backdrop no-drag">
@@ -46,6 +86,21 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
                 <option value="zh">{t("lang.zh")}</option>
               </select>
             </label>
+            <div className="settings-field">
+              <span>{t("settings.appVersion")}</span>
+              <p className="settings-value settings-value--mono">{appVersion ?? "…"}</p>
+            </div>
+            <div className="settings-update-row">
+              <span className="settings-update-row__label">{t("settings.updates")}</span>
+              <p className="settings-update-row__status">{updateStatusText}</p>
+              <GlassButton
+                className="settings-update-row__action"
+                disabled={checkingUpdate}
+                onClick={() => void handleCheckForUpdates()}
+              >
+                {t("update.check")}
+              </GlassButton>
+            </div>
             {runtime ? (
               <>
                 <div className="settings-field">

@@ -9,18 +9,23 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "pack": "electron-builder --config electron-builder.yml",
+    "merge-update-metadata": "bun run scripts/merge-update-metadata.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "postinstall": "node ./node_modules/electron/install.js"
   },
   "dependencies": {
+    "electron-updater": "^6.8.3",
     "i18next": "^25.2.1",
+    "js-yaml": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^15.5.2"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "@types/semver": "^7.7.1",
     "@vitejs/plugin-react": "^4.4.1",
     "electron": "^35.2.1",
     "electron-builder": "^26.0.12",

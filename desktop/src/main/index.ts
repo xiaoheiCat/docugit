@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { resolveAppIcon } from "./app-icon.ts";
+import { initAutoUpdater } from "./auto-updater.ts";
 import { registerIpcHandlers } from "./ipc.ts";
 import { getDataRoot } from "./git-resolver.ts";
 import {
@@ -83,6 +84,7 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   registerIpcHandlers();
+  initAutoUpdater();
   createWindow();
 
   app.on("activate", () => {

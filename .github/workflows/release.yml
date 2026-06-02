@@ -231,19 +231,40 @@ jobs:
           cd desktop
           bun install
           bun run build
+          normalize_desktop_version() {
+            local raw="$1"
+            if [[ "$raw" =~ ^([0-9]{4})\.([0-9]{2})\.([0-9]{2})_([0-9]{2}\.[0-9]{2}\.[0-9]{2})_([a-f0-9]+)$ ]]; then
+              local y="${BASH_REMATCH[1]}"
+              local mo=$((10#${BASH_REMATCH[2]}))
+              local d=$((10#${BASH_REMATCH[3]}))
+              echo "${y}.${mo}.${d}-${y}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}.${BASH_REMATCH[4]}.${BASH_REMATCH[5]}"
+            else
+              echo "$raw"
+            fi
+          }
+          DESKTOP_SEMVER="$(normalize_desktop_version "${DOCUGIT_DESKTOP_VERSION}")"
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            npx electron-builder --config electron-builder.yml --win --x64 \
-              -c.extraMetadata.version=${DOCUGIT_DESKTOP_VERSION}
+            npx electron-builder --config electron-builder.yml --win --x64 --publish never \
+              -c.extraMetadata.version="${DESKTOP_SEMVER}"
           else
-            npx electron-builder --config electron-builder.yml --mac --${{ matrix.electron_arch }} \
-              -c.extraMetadata.version=${DOCUGIT_DESKTOP_VERSION}
+            npx electron-builder --config electron-builder.yml --mac --${{ matrix.electron_arch }} --publish never \
+              -c.extraMetadata.version="${DESKTOP_SEMVER}"
           fi
+
+      - name: Stage desktop installers
+        shell: bash
+        run: |
+          mkdir -p desktop/release/upload
+          find desktop/release -maxdepth 1 -type f \( \
+            -name '*.dmg' -o -name '*.exe' -o -name '*.zip' -o -name '*.blockmap' -o -name 'latest*.yml' \
+          \) -exec cp {} desktop/release/upload/ \;
+          ls -la desktop/release/upload/
 
       - name: Upload desktop artifact
         uses: actions/upload-artifact@v4
         with:
           name: docugit-desktop-${{ matrix.electron_arch }}
-          path: desktop/release/docugit-desktop-*
+          path: desktop/release/upload/*
 
   package:
     needs: [prepare, build, desktop]
@@ -270,6 +291,14 @@ jobs:
           path: dist/desktop
           merge-multiple: true
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install desktop dependencies for update metadata merge
+        run: bun install --frozen-lockfile
+        working-directory: desktop
+
       - name: Flatten artifacts
         run: |
           mkdir -p release/bin release/install release/desktop
@@ -277,7 +306,14 @@ jobs:
           find dist/bin -mindepth 2 -type f -exec cp {} release/bin/ \;
           find release/bin -type f ! -name '*.exe' -exec chmod +x {} +
           find dist/msi -name '*.msi' -exec cp {} release/install/ \; 2>/dev/null || true
-          find dist/desktop -type f \( -name '*.dmg' -o -name '*.exe' \) -exec cp {} release/desktop/ \; 2>/dev/null || true
+          find dist/desktop -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.zip' -o -name '*.blockmap' \) -exec cp {} release/desktop/ \; 2>/dev/null || true
+          idx=0
+          while IFS= read -r f; do
+            cp "$f" "release/desktop/latest-mac-${idx}.yml"
+            idx=$((idx + 1))
+          done < <(find dist/desktop -name 'latest-mac.yml' | sort)
+          find dist/desktop -name 'latest.yml' -exec cp {} release/desktop/ \; 2>/dev/null || true
+          cd desktop && bun run scripts/merge-update-metadata.ts ../release/desktop
           ls -la release/bin/
           ls -la release/install/ || true
           ls -la release/desktop/ || true
@@ -343,10 +379,15 @@ jobs:
           tag_name: ${{ needs.prepare.outputs.version_tag }}
           name: ${{ needs.prepare.outputs.version_tag }}
           generate_release_notes: true
+          overwrite_files: true
           files: |
             release/bin/*
             release/install/*
-            release/desktop/*
+            release/desktop/*.dmg
+            release/desktop/*.exe
+            release/desktop/*.zip
+            release/desktop/*.blockmap
+            release/desktop/latest*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

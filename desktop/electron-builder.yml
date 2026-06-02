@@ -1,6 +1,11 @@
 appId: com.docugit.desktop
 productName: DocuGit Desktop
 icon: ../assets/icon.png
+publish:
+  provider: github
+  owner: xiaoheiCat
+  repo: docugit
+  releaseType: release
 directories:
   output: release
   buildResources: resources
@@ -18,9 +23,12 @@ mac:
   category: public.app-category.productivity
   target:
     - dmg
+    - zip
   artifactName: docugit-desktop-${version}-${arch}.${ext}
   hardenedRuntime: true
   gatekeeperAssess: false
+dmg:
+  writeUpdateInfo: true
 win:
   target:
     - nsis
@@ -29,3 +37,4 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  differentialPackage: true

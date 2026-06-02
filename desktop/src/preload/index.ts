@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from "electron";
-import type { DocuGitDesktopApi } from "../shared/types.ts";
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
+import type { DocuGitDesktopApi, UpdateStatus } from "../shared/types.ts";
 
 const api: DocuGitDesktopApi = {
   platform: process.platform,
@@ -21,6 +21,19 @@ const api: DocuGitDesktopApi = {
   getRuntimeInfo: () => ipcRenderer.invoke("runtime:info"),
   getSetting: (key) => ipcRenderer.invoke("settings:get", key),
   setSetting: (key, value) => ipcRenderer.invoke("settings:set", key, value),
+  getAppVersion: () => ipcRenderer.invoke("app:getVersion"),
+  checkForUpdates: () => ipcRenderer.invoke("update:check"),
+  quitAndInstall: () => ipcRenderer.invoke("update:quitAndInstall"),
+  onUpdateStatus: (listener) => {
+    const handler = (_event: IpcRendererEvent, status: UpdateStatus) => {
+      listener(status);
+    };
+    ipcRenderer.on("update:status", handler);
+    void ipcRenderer.invoke("update:status").then(listener);
+    return () => {
+      ipcRenderer.removeListener("update:status", handler);
+    };
+  },
 };
 
 contextBridge.exposeInMainWorld("docugitDesktop", api);
