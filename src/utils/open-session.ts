@@ -1,9 +1,15 @@
 import { mkdir, stat, unlink } from "node:fs/promises";
 import { join } from "node:path";
 import open from "open";
-import { readConfig, formatDocumentFilename } from "../config/docugit-yml.ts";
+import { DOCUGIT_REPO_FATAL, readConfig, formatDocumentFilename } from "../config/docugit-yml.ts";
 import { applyPackedChanges } from "../merge/three-way.ts";
 import { packToFile } from "../ooxml/pack.ts";
+
+function rethrowIfDocuGitRepoRequired(err: unknown): void {
+  if (err instanceof Error && err.message === DOCUGIT_REPO_FATAL) {
+    throw err;
+  }
+}
 
 export function getOpenSessionDir(repoRoot: string): string {
   return join(repoRoot, ".docugit", "open-session");
@@ -33,7 +39,8 @@ export async function removeOpenSessionFile(repoRoot: string): Promise<boolean> 
   const filePath = await getOpenSessionFilePath(repoRoot);
   try {
     await stat(filePath);
-  } catch {
+  } catch (err) {
+    rethrowIfDocuGitRepoRequired(err);
     return false;
   }
   await unlink(filePath);
@@ -44,7 +51,8 @@ export async function openSessionFileExists(repoRoot: string): Promise<boolean> 
   try {
     await stat(await getOpenSessionFilePath(repoRoot));
     return true;
-  } catch {
+  } catch (err) {
+    rethrowIfDocuGitRepoRequired(err);
     return false;
   }
 }
@@ -58,7 +66,8 @@ export async function applyOpenSessionIfPresent(repoRoot: string): Promise<strin
   const filePath = await getOpenSessionFilePath(repoRoot);
   try {
     await stat(filePath);
-  } catch {
+  } catch (err) {
+    rethrowIfDocuGitRepoRequired(err);
     return null;
   }
   return applyPackedChanges(repoRoot, filePath);

@@ -3,7 +3,7 @@ import {
   initRepoFromFile,
   newRepo,
   exportDocument,
-  getRepoRoot,
+  requireDocuGitRepoRoot,
   resolveNewRepoTarget,
   resolveInitRepoTarget,
 } from "../../utils/repo.ts";
@@ -35,7 +35,7 @@ export async function runNew(type: DocumentType, name: string, dir?: string): Pr
 
 export async function runExport(output?: string): Promise<number> {
   try {
-    const out = await exportDocument(getRepoRoot(), output);
+    const out = await exportDocument(await requireDocuGitRepoRoot(), output);
     console.log(`Exported: ${out}`);
     return 0;
   } catch (err) {

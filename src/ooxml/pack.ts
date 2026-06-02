@@ -51,7 +51,7 @@ export async function listOoxmlParts(repoRoot: string): Promise<string[]> {
       if (entry.isDirectory()) {
         await walk(fullPath);
       } else if (entry.isFile()) {
-        parts.push(relative(repoRoot, fullPath));
+        parts.push(normalizePartPath(relative(repoRoot, fullPath)));
       }
     }
   }
@@ -112,9 +112,10 @@ export async function unpackFromFile(sourcePath: string, targetDir: string): Pro
 }
 
 export function inferTypeFromParts(parts: string[]): DocumentType | null {
-  if (parts.some((p) => p.startsWith("word/"))) return "docx";
-  if (parts.some((p) => p.startsWith("xl/"))) return "xlsx";
-  if (parts.some((p) => p.startsWith("ppt/"))) return "pptx";
+  const normalized = parts.map((p) => normalizePartPath(p));
+  if (normalized.some((p) => p.startsWith("word/"))) return "docx";
+  if (normalized.some((p) => p.startsWith("xl/"))) return "xlsx";
+  if (normalized.some((p) => p.startsWith("ppt/"))) return "pptx";
   return null;
 }
 

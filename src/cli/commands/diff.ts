@@ -11,7 +11,7 @@ import { attachDiffRefs, resolveCommitRef } from "../../utils/diff-refs.ts";
 import { gitOutput, passthroughToGit } from "../../utils/git.ts";
 import { formatLogJson } from "../../utils/log-json.ts";
 import { getOpenSessionFilePath, openSessionFileExists } from "../../utils/open-session.ts";
-import { getRepoRoot } from "../../utils/repo.ts";
+import { requireDocuGitRepoRoot } from "../../utils/repo.ts";
 import { parseGitStatus } from "../../utils/status-json.ts";
 import { writeAndOpenHtml } from "../../utils/temp.ts";
 import { listOoxmlParts, writePart } from "../../ooxml/pack.ts";
@@ -37,7 +37,7 @@ async function checkoutRefToTemp(repoRoot: string, ref: string): Promise<string>
 }
 
 export async function runDiff(options: DiffOptions = {}): Promise<number> {
-  const repoRoot = getRepoRoot();
+  const repoRoot = await requireDocuGitRepoRoot();
   const config = await readConfig(repoRoot);
 
   let repoA: string;
@@ -98,7 +98,14 @@ export interface StatusOptions {
 }
 
 export async function runStatus(options: StatusOptions = {}): Promise<number> {
-  const repoRoot = getRepoRoot();
+  let repoRoot: string;
+  try {
+    repoRoot = await requireDocuGitRepoRoot();
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+    return 1;
+  }
+
   const git = parseGitStatus(repoRoot);
 
   let semantic = null;
@@ -110,8 +117,9 @@ export async function runStatus(options: StatusOptions = {}): Promise<number> {
       resolveCommitRef(repoRoot, "HEAD"),
       "worktree",
     );
-  } catch {
-    semantic = null;
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+    return 1;
   }
 
   let openSessionPath: string | null = null;
@@ -121,9 +129,9 @@ export async function runStatus(options: StatusOptions = {}): Promise<number> {
     if (openSessionActive) {
       openSessionPath = await getOpenSessionFilePath(repoRoot);
     }
-  } catch {
-    openSessionActive = false;
-    openSessionPath = null;
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : err);
+    return 1;
   }
 
   if (options.json) {
@@ -150,7 +158,7 @@ export interface LogOptions {
 
 export async function runLog(args: string[], options: LogOptions = {}): Promise<number> {
   if (options.json) {
-    const repoRoot = getRepoRoot();
+    const repoRoot = await requireDocuGitRepoRoot();
     console.log(JSON.stringify(formatLogJson(repoRoot, options.limit ?? 50), null, 2));
     return 0;
   }

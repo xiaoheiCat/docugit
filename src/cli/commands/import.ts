@@ -1,7 +1,11 @@
 import * as readline from "node:readline/promises";
 import { resolve } from "node:path";
 import type { DocumentType } from "../../config/docugit-yml.ts";
-import { validateImportFromFile, applyImportFromFile, getRepoRoot } from "../../utils/repo.ts";
+import {
+  validateImportFromFile,
+  applyImportFromFile,
+  requireDocuGitRepoRoot,
+} from "../../utils/repo.ts";
 import { runCommit } from "./commit.ts";
 
 async function confirmImport(force: boolean, sourceFile: string): Promise<boolean> {
@@ -24,7 +28,7 @@ async function confirmImport(force: boolean, sourceFile: string): Promise<boolea
 }
 
 export async function runImport(file: string, force: boolean, message: string[] = []): Promise<number> {
-  const repoRoot = getRepoRoot();
+  const repoRoot = await requireDocuGitRepoRoot();
   const sourceFile = resolve(file);
 
   let resolved: string;

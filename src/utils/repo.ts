@@ -9,6 +9,7 @@ import {
   normalizeDocumentName,
   readConfig,
   isDocuGitRepo,
+  DOCUGIT_REPO_FATAL,
   type Author,
   type DocumentType,
 } from "../config/docugit-yml.ts";
@@ -20,6 +21,17 @@ import { copyTemplate } from "./templates.ts";
 
 export function getRepoRoot(cwd = process.cwd()): string {
   return resolve(cwd);
+}
+
+export { DOCUGIT_REPO_FATAL };
+
+/** Resolve cwd and ensure `.docugit.yml` exists (valid DocuGit document repository). */
+export async function requireDocuGitRepoRoot(cwd = process.cwd()): Promise<string> {
+  const repoRoot = getRepoRoot(cwd);
+  if (!(await isDocuGitRepo(repoRoot))) {
+    throw new Error(DOCUGIT_REPO_FATAL);
+  }
+  return repoRoot;
 }
 
 export async function initRepoFromFile(
@@ -170,7 +182,7 @@ export async function validateImportFromFile(
   }
 
   if (!(await isDocuGitRepo(repoRoot))) {
-    throw new Error("fatal: not a DocuGit repository (missing .docugit.yml)");
+    throw new Error(DOCUGIT_REPO_FATAL);
   }
   if (!isGitRepo(repoRoot)) {
     throw new Error("fatal: not a git repository");

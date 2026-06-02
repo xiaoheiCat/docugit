@@ -27,6 +27,9 @@ import { DOCUGIT_VERSION } from "../version.ts";
 
 export const DOCUGIT_CONFIG_FILE = ".docugit.yml";
 
+/** Shown when the repo root has no `.docugit.yml` (not a DocuGit document repository). */
+export const DOCUGIT_REPO_FATAL = "fatal: not a DocuGit repository (missing .docugit.yml)";
+
 export { DOCUGIT_VERSION };
 
 export function detectDocumentType(filename: string): DocumentType | null {
@@ -77,7 +80,16 @@ export function normalizeDocumentName(name: string, type: DocumentType): string 
 }
 
 export async function readConfig(repoRoot: string): Promise<DocuGitConfig> {
-  const content = await readFile(join(repoRoot, DOCUGIT_CONFIG_FILE), "utf-8");
+  const configPath = join(repoRoot, DOCUGIT_CONFIG_FILE);
+  let content: string;
+  try {
+    content = await readFile(configPath, "utf-8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(DOCUGIT_REPO_FATAL);
+    }
+    throw err;
+  }
   return parse(content) as DocuGitConfig;
 }
 
@@ -142,7 +154,10 @@ export async function isDocuGitRepo(repoRoot: string): Promise<boolean> {
   try {
     await readConfig(repoRoot);
     return true;
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && err.message === DOCUGIT_REPO_FATAL) {
+      return false;
+    }
     return false;
   }
 }

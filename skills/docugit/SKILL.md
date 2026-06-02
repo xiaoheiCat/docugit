@@ -10,7 +10,7 @@ Office 文档的 Git 版本控制 CLI。一个仓库对应一个解包后的 Off
 ## 何时使用
 
 - 管理 Word / Excel / PPT 文档版本
-- 仓库含 `.docugit.yml`
+- 仓库根目录含 `.docugit.yml`（缺少则 `fatal: not a DocuGit repository (missing .docugit.yml)`，不是普通文件未找到）
 - 需要语义 diff、merge，或在 Office 中编辑文档
 
 ## 前置条件

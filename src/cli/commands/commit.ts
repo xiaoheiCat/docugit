@@ -4,11 +4,11 @@ import { formatHtmlDiff } from "../../diff/html.ts";
 import type { MergeResultJson } from "../../diff/json-schemas.ts";
 import { conflictsToSemanticChanges, threeWayMerge } from "../../merge/three-way.ts";
 import { gitOutput, passthroughToGit, runGit } from "../../utils/git.ts";
-import { getRepoRoot, prepareCommitMetadata } from "../../utils/repo.ts";
+import { requireDocuGitRepoRoot, prepareCommitMetadata } from "../../utils/repo.ts";
 import { writeAndOpenHtml } from "../../utils/temp.ts";
 
 export async function runCommit(message: string[]): Promise<number> {
-  const repoRoot = getRepoRoot();
+  const repoRoot = await requireDocuGitRepoRoot();
   try {
     const config = await readConfig(repoRoot);
 
@@ -58,7 +58,7 @@ export async function runCommit(message: string[]): Promise<number> {
 }
 
 export async function runMerge(branch: string, html?: boolean, json?: boolean): Promise<number> {
-  const repoRoot = getRepoRoot();
+  const repoRoot = await requireDocuGitRepoRoot();
   try {
     const config = await readConfig(repoRoot);
     const base = gitOutput(["merge-base", "HEAD", branch], repoRoot);

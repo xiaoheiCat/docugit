@@ -1,8 +1,12 @@
-import { getDocumentName, renameDocument, getRepoRoot } from "../../utils/repo.ts";
+import {
+  getDocumentName,
+  renameDocument,
+  requireDocuGitRepoRoot,
+} from "../../utils/repo.ts";
 
 export async function runName(): Promise<number> {
   try {
-    console.log(await getDocumentName(getRepoRoot()));
+    console.log(await getDocumentName(await requireDocuGitRepoRoot()));
     return 0;
   } catch (err) {
     console.error(err instanceof Error ? err.message : err);
@@ -12,7 +16,7 @@ export async function runName(): Promise<number> {
 
 export async function runRename(newName: string): Promise<number> {
   try {
-    await renameDocument(getRepoRoot(), newName);
+    await renameDocument(await requireDocuGitRepoRoot(), newName);
     return 0;
   } catch (err) {
     console.error(err instanceof Error ? err.message : err);

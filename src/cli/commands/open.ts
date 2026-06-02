@@ -3,11 +3,11 @@ import {
   ensureOpenSessionFromRepo,
   openDocumentForEditing,
 } from "../../utils/open-session.ts";
-import { getRepoRoot } from "../../utils/repo.ts";
+import { requireDocuGitRepoRoot } from "../../utils/repo.ts";
 
 export async function runOpen(): Promise<number> {
   try {
-    const repoRoot = getRepoRoot();
+    const repoRoot = await requireDocuGitRepoRoot();
     const { filePath, created } = await ensureOpenSessionFromRepo(repoRoot);
     await openDocumentForEditing(filePath);
     console.log(`Opened: ${basename(filePath)}`);

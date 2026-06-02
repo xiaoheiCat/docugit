@@ -1,6 +1,6 @@
 import * as readline from "node:readline/promises";
 import { openSessionFileExists, removeOpenSessionFile } from "../../utils/open-session.ts";
-import { getRepoRoot } from "../../utils/repo.ts";
+import { requireDocuGitRepoRoot } from "../../utils/repo.ts";
 
 async function confirmDiscard(force: boolean): Promise<boolean> {
   if (force) return true;
@@ -21,7 +21,7 @@ async function confirmDiscard(force: boolean): Promise<boolean> {
 
 export async function runRestore(force: boolean): Promise<number> {
   try {
-    const repoRoot = getRepoRoot();
+    const repoRoot = await requireDocuGitRepoRoot();
 
     if (!(await openSessionFileExists(repoRoot))) {
       console.error("error: no open session to discard");

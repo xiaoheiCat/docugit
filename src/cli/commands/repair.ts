@@ -1,9 +1,9 @@
 import { repairOoxmlPackage, summarizeRepair } from "../../ooxml/repair.ts";
-import { getRepoRoot } from "../../utils/repo.ts";
+import { requireDocuGitRepoRoot } from "../../utils/repo.ts";
 
 export async function runRepair(): Promise<number> {
   try {
-    const repoRoot = getRepoRoot();
+    const repoRoot = await requireDocuGitRepoRoot();
     const result = await repairOoxmlPackage(repoRoot);
     const summary = summarizeRepair(result);
     if (summary === "no repairs needed" && result.warnings.length === 0) {
