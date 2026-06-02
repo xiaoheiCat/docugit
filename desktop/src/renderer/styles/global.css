@@ -191,10 +191,6 @@ html:not([data-platform="darwin"]) .titlebar-drag-region {
   z-index: 2;
 }
 
-html[data-platform="darwin"] .top-nav {
-  padding-left: 78px;
-}
-
 .nav-bar-inner {
   display: flex;
   align-items: center;
