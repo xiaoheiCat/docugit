@@ -56,6 +56,8 @@ export function initAutoUpdater(): void {
     return;
   }
 
+  // DocuGit release tags are calver (v2026.06.02_…), not semver prerelease channels.
+  autoUpdater.allowPrerelease = false;
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.logger = null;
