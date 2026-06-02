@@ -27,6 +27,7 @@ mac:
     - dmg
     - zip
   artifactName: docugit-desktop-darwin-${version}-${arch}.${ext}
+  # Developer ID builds use hardened runtime; CI ad-hoc passes -c.mac.hardenedRuntime=false.
   hardenedRuntime: true
   gatekeeperAssess: false
   entitlements: build/entitlements.mac.plist

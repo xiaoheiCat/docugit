@@ -266,7 +266,9 @@ jobs:
               fi
               unset CSC_LINK CSC_KEY_PASSWORD CSC_NAME APPLE_API_KEY APPLE_API_KEY_ID APPLE_API_ISSUER
               export CSC_IDENTITY_AUTO_DISCOVERY=false
-              MAC_SIGN_ARGS=(-c.mac.identity=-)
+              export DOCUGIT_MAC_HARDENED_RUNTIME=false
+              # ad-hoc + hardenedRuntime breaks codesign/ShipIt; match electron-builder docs.
+              MAC_SIGN_ARGS=(-c.mac.identity=- -c.mac.hardenedRuntime=false)
             fi
           fi
 
@@ -284,6 +286,12 @@ jobs:
           else
             npx electron-builder --config electron-builder.yml --mac --${{ matrix.electron_arch }} --publish never \
               -c.extraMetadata.version="${DESKTOP_SEMVER}" "${MAC_SIGN_ARGS[@]}"
+            APP_PATH="$(find release -path '*.app' -type d -maxdepth 3 | head -1)"
+            if [ -z "${APP_PATH}" ]; then
+              echo "fatal: no .app under desktop/release after electron-builder"
+              exit 1
+            fi
+            bun run scripts/verify-mac-signing.ts "${APP_PATH}"
           fi
 
       - name: Stage desktop installers

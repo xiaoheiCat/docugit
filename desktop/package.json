@@ -10,6 +10,7 @@
     "preview": "electron-vite preview",
     "pack": "electron-builder --config electron-builder.yml",
     "merge-update-metadata": "bun run scripts/merge-update-metadata.ts",
+    "verify-mac-signing": "bun run scripts/verify-mac-signing.ts",
     "stage-git": "bun run scripts/stage-bundled-git.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "postinstall": "node ./node_modules/electron/install.js"
