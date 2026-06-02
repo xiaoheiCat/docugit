@@ -1,0 +1,2 @@
+# Placeholder — CI copies compiled docugit binary here before packaging.
+# Dev: symlink or copy from ../dist/docugit

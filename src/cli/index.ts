@@ -137,15 +137,27 @@ async function main(): Promise<void> {
   program
     .command("status")
     .description("Repository status with semantic summary")
-    .action(async () => {
-      process.exit(await runStatus());
+    .option("--json", "Output structured JSON status")
+    .action(async (opts: { json?: boolean }) => {
+      process.exit(await runStatus({ json: opts.json }));
     });
 
   program
     .command("log")
     .description("Commit history")
+    .option("--json", "Output structured JSON log")
+    .option("-n, --limit <n>", "Limit number of commits for --json", "50")
     .allowUnknownOption(true)
-    .action(async () => {
+    .action(async (opts: { json?: boolean; limit?: string }) => {
+      if (opts.json) {
+        process.exit(
+          await runLog([], {
+            json: true,
+            limit: opts.limit ? parseInt(opts.limit, 10) : 50,
+          }),
+        );
+        return;
+      }
       const args = rawArgs.slice(1);
       process.exit(await runLog(args));
     });
@@ -166,8 +178,9 @@ async function main(): Promise<void> {
     .description("Three-way semantic merge")
     .argument("<branch>", "Branch to merge")
     .option("--html", "Open an HTML conflict report")
-    .action(async (branch: string, opts: { html?: boolean }) => {
-      process.exit(await runMerge(branch, opts.html));
+    .option("--json", "Output structured JSON merge result")
+    .action(async (branch: string, opts: { html?: boolean; json?: boolean }) => {
+      process.exit(await runMerge(branch, opts.html, opts.json));
     });
 
   await program.parseAsync(process.argv);

@@ -1,0 +1,27 @@
+appId: com.docugit.desktop
+productName: DocuGit Desktop
+directories:
+  output: release
+  buildResources: resources
+files:
+  - out/**/*
+  - package.json
+extraResources:
+  - from: resources/bin/
+    to: bin/
+    filter:
+      - "**/*"
+mac:
+  category: public.app-category.productivity
+  target:
+    - dmg
+  artifactName: docugit-desktop-${version}-${arch}.${ext}
+  hardenedRuntime: true
+  gatekeeperAssess: false
+win:
+  target:
+    - nsis
+  artifactName: docugit-desktop-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

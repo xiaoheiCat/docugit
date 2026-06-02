@@ -136,8 +136,89 @@ jobs:
           name: docugit-msi-${{ matrix.arch }}
           path: dist/docugit-*.msi
 
+  desktop:
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            docugit_artifact: docugit-darwin-arm64
+            docugit_bin: docugit-darwin-arm64
+            electron_arch: arm64
+            ext: dmg
+          - os: macos-15-intel
+            docugit_artifact: docugit-darwin-amd64
+            docugit_bin: docugit-darwin-amd64
+            electron_arch: x64
+            ext: dmg
+          - os: windows-latest
+            docugit_artifact: docugit-windows-amd64
+            docugit_bin: docugit-windows-amd64.exe
+            electron_arch: x64
+            ext: exe
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install CLI dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build docugit binary for desktop
+        shell: bash
+        env:
+          DOCUGIT_VERSION: ${{ needs.prepare.outputs.version_tag }}
+        run: |
+          case "${{ matrix.os }}" in
+            macos-latest) target=bun-darwin-arm64 ;;
+            macos-15-intel) target=bun-darwin-x64 ;;
+            windows-latest) target=bun-windows-x64 ;;
+          esac
+          bun run embed-templates
+          bun build src/cli/index.ts --compile \
+            --target=$target \
+            --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
+            --outfile dist/${{ matrix.docugit_bin }}
+
+      - name: Stage docugit for electron-builder
+        shell: bash
+        run: |
+          mkdir -p desktop/resources/bin
+          cp "dist/${{ matrix.docugit_bin }}" "desktop/resources/bin/docugit${{ matrix.os == 'windows-latest' && '.exe' || '' }}"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build DocuGit Desktop
+        shell: bash
+        env:
+          DOCUGIT_DESKTOP_VERSION: ${{ needs.prepare.outputs.pkg_version }}
+        run: |
+          cd desktop
+          bun install
+          bun run build
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            npx electron-builder --config electron-builder.yml --win --x64 \
+              -c.extraMetadata.version=${DOCUGIT_DESKTOP_VERSION}
+          else
+            npx electron-builder --config electron-builder.yml --mac --${{ matrix.electron_arch }} \
+              -c.extraMetadata.version=${DOCUGIT_DESKTOP_VERSION}
+          fi
+
+      - name: Upload desktop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docugit-desktop-${{ matrix.electron_arch }}
+          path: desktop/release/docugit-desktop-*
+
   package:
-    needs: [prepare, build]
+    needs: [prepare, build, desktop]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -154,15 +235,24 @@ jobs:
           path: dist/msi
           merge-multiple: true
 
+      - name: Download desktop artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: docugit-desktop-*
+          path: dist/desktop
+          merge-multiple: true
+
       - name: Flatten artifacts
         run: |
-          mkdir -p release/bin release/install
+          mkdir -p release/bin release/install release/desktop
           # Artifact download drops the executable bit on Unix binaries; do not rely on -executable.
           find dist/bin -mindepth 2 -type f -exec cp {} release/bin/ \;
           find release/bin -type f ! -name '*.exe' -exec chmod +x {} +
           find dist/msi -name '*.msi' -exec cp {} release/install/ \; 2>/dev/null || true
+          find dist/desktop -type f \( -name '*.dmg' -o -name '*.exe' \) -exec cp {} release/desktop/ \; 2>/dev/null || true
           ls -la release/bin/
           ls -la release/install/ || true
+          ls -la release/desktop/ || true
 
       - name: Install nfpm
         run: |
@@ -228,6 +318,7 @@ jobs:
           files: |
             release/bin/*
             release/install/*
+            release/desktop/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

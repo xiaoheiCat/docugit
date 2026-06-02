@@ -1,6 +1,7 @@
 import { readConfig } from "../../config/docugit-yml.ts";
 import { summarizeChanges } from "../../diff/engine.ts";
 import { formatHtmlDiff } from "../../diff/html.ts";
+import type { MergeResultJson } from "../../diff/json-schemas.ts";
 import { conflictsToSemanticChanges, threeWayMerge } from "../../merge/three-way.ts";
 import { gitOutput, passthroughToGit, runGit } from "../../utils/git.ts";
 import { getRepoRoot, prepareCommitMetadata } from "../../utils/repo.ts";
@@ -56,7 +57,7 @@ export async function runCommit(message: string[]): Promise<number> {
   }
 }
 
-export async function runMerge(branch: string, html?: boolean): Promise<number> {
+export async function runMerge(branch: string, html?: boolean, json?: boolean): Promise<number> {
   const repoRoot = getRepoRoot();
   try {
     const config = await readConfig(repoRoot);
@@ -67,13 +68,24 @@ export async function runMerge(branch: string, html?: boolean): Promise<number> 
       await prepareCommitMetadata(repoRoot);
       runGit(["add", "-A"], repoRoot);
       const code = runGit(["commit", "-m", `docugit: merge ${branch} (${result.summary})`], repoRoot);
-      console.log(`Merge succeeded: ${result.summary}`);
+      if (json) {
+        const payload: MergeResultJson = { success: true, summary: result.summary };
+        console.log(JSON.stringify(payload, null, 2));
+      } else {
+        console.log(`Merge succeeded: ${result.summary}`);
+      }
       return code;
+    }
+
+    const semantic = conflictsToSemanticChanges(result.conflicts, config.document.type);
+    if (json) {
+      const payload: MergeResultJson = { success: false, conflicts: semantic };
+      console.log(JSON.stringify(payload, null, 2));
+      return 1;
     }
 
     console.error(`Merge has ${result.conflicts.length} conflict(s)`);
     if (html) {
-      const semantic = conflictsToSemanticChanges(result.conflicts, config.document.type);
       await writeAndOpenHtml(formatHtmlDiff(semantic, "DocuGit Merge Conflicts"));
     }
     return 1;

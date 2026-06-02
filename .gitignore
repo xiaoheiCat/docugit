@@ -3,3 +3,6 @@ dist/
 .DS_Store
 *.tmp
 .docugit/
+desktop/out/
+desktop/release/
+desktop/node_modules/

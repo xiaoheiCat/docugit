@@ -98,10 +98,10 @@ docugit commit -m "rename document"
 | `name` | |
 | `rename` | `<name>` |
 | `diff` | `[--html] [--json] [--ref ref]` |
-| `status` | |
-| `log` | `[args...]` |
+| `status` | `[--json]` |
+| `log` | `[--json] [--limit n]` |
 | `commit` | `[-m message]` |
-| `merge` | `<branch> [--html]` |
+| `merge` | `<branch> [--html] [--json]` |
 
 其他 Git 操作可直接使用 `docugit` 前缀，例如 `docugit pull`、`docugit branch`、`docugit checkout`。
 

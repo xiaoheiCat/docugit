@@ -11,7 +11,10 @@
     "build": "bun run embed-templates && bun build src/cli/index.ts --compile --outfile dist/docugit",
     "sync-templates": "bun run scripts/sync-templates.ts",
     "embed-templates": "bun run scripts/embed-templates.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "desktop:dev": "cd desktop && bun install && bun run dev",
+    "desktop:build": "cd desktop && bun install && bun run build",
+    "desktop:pack": "cd desktop && bun install && bun run pack"
   },
   "devDependencies": {
     "@types/bun": "latest",

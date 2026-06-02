@@ -10,7 +10,9 @@ This project relies heavily on Git. Install [Git](https://git-scm.com) before us
 
 ## Install
 
-### Standalone binary (quickest try)
+### CLI
+
+#### Standalone binary (quickest try)
 
 Download the binary for your platform from [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) and add it to `PATH`:
 
@@ -29,7 +31,7 @@ sudo mv docugit-darwin-arm64 /usr/local/bin/docugit
 docugit --version
 ```
 
-### Homebrew
+#### Homebrew
 
 ```bash
 brew tap xiaoheiCat/docugit https://github.com/xiaoheiCat/docugit
@@ -43,7 +45,7 @@ brew update
 brew upgrade docugit
 ```
 
-### APT deb (Linux)
+#### APT deb (Linux)
 
 Download the `.deb` for your architecture from the `install/` directory on [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases/latest) (filename like `docugit_<version>_<arch>.deb`), then:
 
@@ -51,11 +53,11 @@ Download the `.deb` for your architecture from the `install/` directory on [GitH
 sudo apt install ./docugit_<version>_<arch>.deb
 ```
 
-### Windows MSI
+#### Windows MSI
 
 Run `docugit-{version}-{arch}.msi`.
 
-### From source
+#### From source
 
 > We use Bun as the runtime.
 
@@ -66,6 +68,18 @@ bun install
 bun run dev -- --help
 bun run build   # compile local binary to dist/docugit
 ```
+
+### DocuGit Desktop
+
+DocuGit GUI client for Windows and macOS.
+
+Download from [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases):
+
+| Platform | File |
+|----------|------|
+| macOS (Apple Silicon) | `docugit-desktop-<version>-arm64.dmg` |
+| macOS (Intel) | `docugit-desktop-<version>-x64.dmg` |
+| Windows amd64 | `docugit-desktop-<version>-x64.exe` |
 
 ## Quick start
 
@@ -139,10 +153,10 @@ my-doc/
 | `docugit name` | Show document filename |
 | `docugit rename <name>` | Rename document filename |
 | `docugit diff [--html\|--json]` | Semantic diff |
-| `docugit status` | Status + semantic summary |
-| `docugit log` | Commit history |
+| `docugit status [--json]` | Status + semantic summary |
+| `docugit log [--json]` | Commit history |
 | `docugit commit [-m msg]` | Apply open session, then commit with semantic summary |
-| `docugit merge <branch> [--html]` | Three-way merge |
+| `docugit merge <branch> [--html\|--json]` | Three-way merge |
 | `docugit <any-git-cmd>` | Any other Git command (requires Git installed) |
 
 ## For AI agents

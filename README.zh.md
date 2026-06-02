@@ -10,7 +10,9 @@ DocuGit 将 `.docx` / `.xlsx` / `.pptx` 解包为 Git 仓库内容，在 Git 之
 
 ## 安装
 
-### 裸二进制（推荐快速试用）
+### CLI
+
+#### 裸二进制（推荐快速试用）
 
 从 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) 下载对应平台二进制，加入 `PATH`：
 
@@ -29,7 +31,7 @@ sudo mv docugit-darwin-arm64 /usr/local/bin/docugit
 docugit --version
 ```
 
-### Homebrew
+#### Homebrew
 
 ```bash
 brew tap xiaoheiCat/docugit https://github.com/xiaoheiCat/docugit
@@ -43,7 +45,7 @@ brew update
 brew upgrade docugit
 ```
 
-### APT deb（Linux）
+#### APT deb（Linux）
 
 从 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases/latest) 下载 `install/` 目录下对应架构的 `.deb`（文件名形如 `docugit_<version>_<arch>.deb`），然后：
 
@@ -51,11 +53,11 @@ brew upgrade docugit
 sudo apt install ./docugit_<version>_<arch>.deb
 ```
 
-### Windows MSI
+#### Windows MSI
 
 双击 `docugit-{version}-{arch}.msi` 安装。
 
-### 从源码
+#### 从源码
 
 > 我们使用 Bun 作为运行时。
 
@@ -66,6 +68,17 @@ bun install
 bun run dev -- --help
 bun run build   # 编译本地二进制到 dist/docugit
 ```
+### DocuGit Desktop
+
+为 Windows 与 macOS 开发的 DocuGit 的图形客户端。
+
+从 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) 下载：
+
+| 平台 | 文件 |
+|------|------|
+| macOS (Apple Silicon) | `docugit-desktop-<version>-arm64.dmg` |
+| macOS (Intel) | `docugit-desktop-<version>-x64.dmg` |
+| Windows amd64 | `docugit-desktop-<version>-x64.exe` |
 
 ## 快速开始
 
@@ -139,10 +152,10 @@ my-doc/
 | `docugit name` | 查看文档文件名 |
 | `docugit rename <name>` | 修改文档文件名 |
 | `docugit diff [--html\|--json]` | 语义 diff |
-| `docugit status` | 状态 + 语义摘要 |
-| `docugit log` | 提交历史 |
+| `docugit status [--json]` | 状态 + 语义摘要 |
+| `docugit log [--json]` | 提交历史 |
 | `docugit commit [-m msg]` | 应用 open session 后提交并生成语义摘要 |
-| `docugit merge <branch> [--html]` | 三路 merge |
+| `docugit merge <branch> [--html\|--json]` | 三路 merge |
 | `docugit <any-git-cmd>` | 兼容其他的任意 Git 命令！(需要系统安装有 Git) |
 
 ## 如果你不是人类...

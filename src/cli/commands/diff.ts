@@ -5,9 +5,13 @@ import { readConfig } from "../../config/docugit-yml.ts";
 import { computeSemanticDiff } from "../../diff/engine.ts";
 import { formatHtmlDiff } from "../../diff/html.ts";
 import { formatJsonDiff } from "../../diff/json.ts";
+import type { StatusJson } from "../../diff/json-schemas.ts";
 import { formatTerminalDiff } from "../../diff/terminal.ts";
 import { gitOutput, passthroughToGit } from "../../utils/git.ts";
+import { formatLogJson } from "../../utils/log-json.ts";
+import { getOpenSessionFilePath, openSessionFileExists } from "../../utils/open-session.ts";
 import { getRepoRoot } from "../../utils/repo.ts";
+import { parseGitStatus } from "../../utils/status-json.ts";
 import { writeAndOpenHtml } from "../../utils/temp.ts";
 import { listOoxmlParts, writePart } from "../../ooxml/pack.ts";
 
@@ -75,22 +79,62 @@ export async function runDiff(options: DiffOptions = {}): Promise<number> {
   return 0;
 }
 
-export async function runStatus(): Promise<number> {
-  const code = passthroughToGit(["status"]);
+export interface StatusOptions {
+  json?: boolean;
+}
+
+export async function runStatus(options: StatusOptions = {}): Promise<number> {
   const repoRoot = getRepoRoot();
+  const git = parseGitStatus(repoRoot);
+
+  let semantic = null;
   try {
     const config = await readConfig(repoRoot);
     const headDir = await checkoutRefToTemp(repoRoot, "HEAD");
-    const result = await computeSemanticDiff(headDir, repoRoot, config.document.type);
-    if (result.changes.length > 0) {
-      console.log("\nDocuGit semantic summary:", result.summary);
+    semantic = await computeSemanticDiff(headDir, repoRoot, config.document.type);
+  } catch {
+    semantic = null;
+  }
+
+  let openSessionPath: string | null = null;
+  let openSessionActive = false;
+  try {
+    openSessionActive = await openSessionFileExists(repoRoot);
+    if (openSessionActive) {
+      openSessionPath = await getOpenSessionFilePath(repoRoot);
     }
   } catch {
-    /* not a docugit repo */
+    openSessionActive = false;
+    openSessionPath = null;
+  }
+
+  if (options.json) {
+    const payload: StatusJson = {
+      git,
+      semantic,
+      openSession: { active: openSessionActive, path: openSessionPath },
+    };
+    console.log(JSON.stringify(payload, null, 2));
+    return 0;
+  }
+
+  const code = passthroughToGit(["status"]);
+  if (semantic && semantic.changes.length > 0) {
+    console.log("\nDocuGit semantic summary:", semantic.summary);
   }
   return code;
 }
 
-export async function runLog(args: string[]): Promise<number> {
+export interface LogOptions {
+  json?: boolean;
+  limit?: number;
+}
+
+export async function runLog(args: string[], options: LogOptions = {}): Promise<number> {
+  if (options.json) {
+    const repoRoot = getRepoRoot();
+    console.log(JSON.stringify(formatLogJson(repoRoot, options.limit ?? 50), null, 2));
+    return 0;
+  }
   return passthroughToGit(["log", ...args]);
 }
