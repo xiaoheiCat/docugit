@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { DocumentType } from "../../shared/types.ts";
+import type { DocumentType, GitCloneProgress } from "../../shared/types.ts";
 import { BranchPicker } from "../components/BranchPicker.tsx";
+import { GitProgressBar } from "../components/GitProgressBar.tsx";
 import { formatDocumentTypeLabel } from "../utils/document-type.ts";
 import { ConfirmDialog } from "../components/ConfirmDialog.tsx";
 import { GlassButton, GlassPanel } from "../components/GlassPanel.tsx";
@@ -50,6 +51,7 @@ export function RepoDialogs({
   const [sourceFile, setSourceFile] = useState("");
   const [sourcePath, setSourcePath] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cloneProgress, setCloneProgress] = useState<GitCloneProgress | null>(null);
   const [branchDeleteTarget, setBranchDeleteTarget] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,17 +65,38 @@ export function RepoDialogs({
     setSourceFile("");
     setSourcePath("");
     setBranchDeleteTarget(null);
+    setCloneProgress(null);
   }, [kind]);
+
+  useEffect(() => {
+    if (kind !== "clone" || !busy) {
+      return;
+    }
+    return window.docugitDesktop.onCloneProgress(setCloneProgress);
+  }, [kind, busy]);
 
   if (!kind) return null;
 
+  function cloneProgressAriaLabel(progress: GitCloneProgress | null): string {
+    if (!progress) {
+      return t("dialog.clone.progress");
+    }
+    const key = `dialog.clone.phase.${progress.phase}`;
+    const translated = t(key, { percent: progress.percent });
+    return translated === key ? t("dialog.clone.progress") : translated;
+  }
+
   async function submit(action: () => Promise<void>): Promise<void> {
     setBusy(true);
+    if (kind === "clone") {
+      setCloneProgress({ percent: 0, phase: "starting" });
+    }
     try {
       await action();
       onClose();
     } finally {
       setBusy(false);
+      setCloneProgress(null);
     }
   }
 
@@ -137,7 +160,7 @@ export function RepoDialogs({
       case "clone":
         return (
           <>
-            <GlassButton onClick={onClose}>
+            <GlassButton onClick={onClose} disabled={busy}>
               {t("dialog.cancel")}
             </GlassButton>
             <GlassButton
@@ -145,7 +168,7 @@ export function RepoDialogs({
               disabled={!url.trim() || busy}
               onClick={() => submit(() => onClone(url.trim()))}
             >
-              {t("dialog.confirm")}
+              {busy ? t("dialog.clone.inProgress") : t("dialog.confirm")}
             </GlassButton>
           </>
         );
@@ -271,8 +294,18 @@ export function RepoDialogs({
               <h2>{t("dialog.clone.title")}</h2>
               <label>
                 {t("dialog.clone.url")}
-                <input value={url} onChange={(e) => setUrl(e.target.value)} />
+                <input
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  disabled={busy}
+                />
               </label>
+              {busy ? (
+                <GitProgressBar
+                  percent={cloneProgress?.percent ?? 0}
+                  ariaLabel={cloneProgressAriaLabel(cloneProgress)}
+                />
+              ) : null}
             </>
           ) : null}
 

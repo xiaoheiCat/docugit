@@ -55,10 +55,15 @@ function buildEnv(): NodeJS.ProcessEnv {
   return env;
 }
 
+export interface SpawnCommandOptions {
+  onStderrChunk?: (chunk: string) => void;
+}
+
 export async function spawnCommand(
   command: string,
   args: string[],
   cwd: string,
+  options?: SpawnCommandOptions,
 ): Promise<CommandResult> {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
@@ -74,7 +79,9 @@ export async function spawnCommand(
       stdout += chunk.toString();
     });
     child.stderr?.on("data", (chunk: Buffer) => {
-      stderr += chunk.toString();
+      const text = chunk.toString();
+      stderr += text;
+      options?.onStderrChunk?.(text);
     });
 
     child.on("close", (code) => {
@@ -101,7 +108,11 @@ export async function runDocugit(cwd: string, args: string[]): Promise<CommandRe
   return spawnCommand(spawnArgs.command, spawnArgs.args, cwd);
 }
 
-export async function runGit(cwd: string, args: string[]): Promise<CommandResult> {
+export async function runGit(
+  cwd: string,
+  args: string[],
+  options?: SpawnCommandOptions,
+): Promise<CommandResult> {
   const git = resolveGit();
-  return spawnCommand(git.path, args, cwd);
+  return spawnCommand(git.path, args, cwd, options);
 }

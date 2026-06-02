@@ -15,6 +15,11 @@ import type {
 } from "../shared/types.ts";
 import { getDataRoot } from "./git-resolver.ts";
 import { runDocugit, runGit } from "./cli-spawner.ts";
+import {
+  broadcastCloneProgress,
+  feedGitCloneProgress,
+  parseGitCloneProgress,
+} from "./git-clone-progress.ts";
 
 const REGISTRY_FILE = "registry.json";
 const SESSION_ACTIVE_WORKSPACE_KEY = "session.activeWorkspaceId";
@@ -281,10 +286,31 @@ export async function cloneRepo(params: CloneRepoParams): Promise<WorkspaceEntry
   const repoPath = resolveRepoPath(id, repoName);
   await mkdir(join(workspacesRoot(), id), { recursive: true });
 
-  const result = await runGit(join(workspacesRoot(), id), ["clone", params.url, repoPath]);
+  const progressBuffer = { tail: "" };
+  broadcastCloneProgress({ percent: 0, phase: "starting" });
+
+  const result = await runGit(
+    join(workspacesRoot(), id),
+    ["clone", "--progress", params.url, repoPath],
+    {
+      onStderrChunk: (chunk) => {
+        feedGitCloneProgress(chunk, progressBuffer, broadcastCloneProgress);
+      },
+    },
+  );
+
+  if (progressBuffer.tail) {
+    const tail = parseGitCloneProgress(progressBuffer.tail);
+    if (tail) {
+      broadcastCloneProgress(tail);
+    }
+  }
+
   if (result.exitCode !== 0) {
     throw new Error(result.stderr || result.stdout || "git clone failed");
   }
+
+  broadcastCloneProgress({ percent: 100, phase: "done" });
 
   if (!(await isDocuGitRepo(repoPath))) {
     await rm(repoPath, { recursive: true, force: true });

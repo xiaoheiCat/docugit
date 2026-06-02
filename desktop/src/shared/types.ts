@@ -134,6 +134,12 @@ export type UpdateStatus =
   | { state: "error"; message: string }
   | { state: "dev-skipped" };
 
+/** Progress from `git clone --progress` (stderr), mirrored in the clone dialog. */
+export interface GitCloneProgress {
+  percent: number;
+  phase: string;
+}
+
 export interface DocuGitDesktopApi {
   readonly platform: NodeJS.Platform;
   listWorkspaces(): Promise<WorkspaceEntry[]>;
@@ -156,6 +162,7 @@ export interface DocuGitDesktopApi {
   checkForUpdates(): Promise<boolean>;
   quitAndInstall(): Promise<void>;
   onUpdateStatus(listener: (status: UpdateStatus) => void): () => void;
+  onCloneProgress(listener: (progress: GitCloneProgress) => void): () => void;
 }
 
 declare global {

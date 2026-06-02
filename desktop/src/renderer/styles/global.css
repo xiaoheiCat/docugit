@@ -671,6 +671,29 @@ html[data-platform="darwin"] .top-nav {
   font-size: 0.88rem;
 }
 
+.git-progress {
+  margin-top: 12px;
+}
+
+.git-progress__track {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.git-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    rgba(96, 165, 250, 0.55) 0%,
+    rgba(147, 197, 253, 0.75) 100%
+  );
+  transition: width 0.2s ease;
+}
+
 .dialog-details-pre {
   margin: 10px 0 0;
   padding: 10px 12px;

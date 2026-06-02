@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from "electron";
-import type { DocuGitDesktopApi, UpdateStatus } from "../shared/types.ts";
+import type { DocuGitDesktopApi, GitCloneProgress, UpdateStatus } from "../shared/types.ts";
 
 const api: DocuGitDesktopApi = {
   platform: process.platform,
@@ -32,6 +32,15 @@ const api: DocuGitDesktopApi = {
     void ipcRenderer.invoke("update:status").then(listener);
     return () => {
       ipcRenderer.removeListener("update:status", handler);
+    };
+  },
+  onCloneProgress: (listener) => {
+    const handler = (_event: IpcRendererEvent, progress: GitCloneProgress) => {
+      listener(progress);
+    };
+    ipcRenderer.on("clone:progress", handler);
+    return () => {
+      ipcRenderer.removeListener("clone:progress", handler);
     };
   },
 };
