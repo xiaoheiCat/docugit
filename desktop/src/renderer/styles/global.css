@@ -673,23 +673,40 @@ html[data-platform="darwin"] .top-nav {
   letter-spacing: 0.03em;
 }
 
-.welcome-repo-delete {
+.delete-icon-btn {
   flex-shrink: 0;
+  display: grid;
+  place-items: center;
   width: 40px;
+  height: 40px;
+  padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--muted);
-  font-size: 1.25rem;
-  line-height: 1;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.welcome-repo-delete:hover {
+.delete-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.delete-icon-btn__icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
+.delete-icon-btn:hover:not(:disabled) {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.35);
   color: var(--removed);
+}
+
+.delete-icon-btn--compact {
+  border-radius: 10px;
 }
 
 .status-view {
@@ -1200,25 +1217,6 @@ html[data-platform="darwin"] .top-nav {
   color: #93c5fd;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-}
-
-.branch-picker__delete {
-  flex-shrink: 0;
-  width: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--muted);
-  font-size: 1.2rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.branch-picker__delete:hover {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.35);
-  color: var(--removed);
 }
 
 .dialog-actions {

@@ -1,0 +1,20 @@
+interface TrashIconProps {
+  className?: string;
+}
+
+export function TrashIcon({ className }: TrashIconProps): React.JSX.Element {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 512 512"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="m512 64h-192v-32c0-17.671875-14.328125-32-32-32h-64c-17.671875 0-32 14.328125-32 32v32h-192v32h64v336c.054688 44.160156 35.839844 79.945312 80 80h224c44.160156-.054688 79.945312-35.839844 80-80v-336h64zm-288-32h64v32h-64zm192 400c0 26.507812-21.492188 48-48 48h-224c-26.511719 0-48-21.492188-48-48v-336h320zm0 0" />
+      <path d="m144 128h32v320h-32zm0 0" />
+      <path d="m240 128h32v320h-32zm0 0" />
+      <path d="m336 128h32v320h-32zm0 0" />
+    </svg>
+  );
+}

@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { WorkspaceEntry } from "../../shared/types.ts";
 import { GlassButton, GlassPanel } from "../components/GlassPanel.tsx";
+import { DeleteIconButton } from "../components/DeleteIconButton.tsx";
 
 interface WelcomeViewProps {
   workspaces: WorkspaceEntry[];
@@ -40,14 +41,11 @@ export function WelcomeView({
                     <span className="welcome-repo-card__name">{workspace.name}</span>
                     <span className="welcome-repo-card__type">{workspace.documentType}</span>
                   </button>
-                  <button
-                    type="button"
-                    className="welcome-repo-delete no-drag"
+                  <DeleteIconButton
+                    className="no-drag"
                     aria-label={t("welcome.removeRepo", { name: workspace.name })}
                     onClick={() => onRemoveWorkspace(workspace)}
-                  >
-                    ×
-                  </button>
+                  />
                 </li>
               ))}
             </ul>

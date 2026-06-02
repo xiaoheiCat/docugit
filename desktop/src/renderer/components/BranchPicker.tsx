@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { DeleteIconButton } from "./DeleteIconButton.tsx";
 
 interface BranchPickerProps {
   label: string;
@@ -73,14 +74,11 @@ export function BranchPicker({
                     ) : null}
                   </button>
                   {deletable && !isCurrent ? (
-                    <button
-                      type="button"
-                      className="branch-picker__delete"
+                    <DeleteIconButton
+                      className="delete-icon-btn--compact"
                       aria-label={t("dialog.branch.delete", { name })}
                       onClick={() => onDelete?.(name)}
-                    >
-                      ×
-                    </button>
+                    />
                   ) : null}
                 </li>
               );
