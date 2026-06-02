@@ -16,13 +16,52 @@ interface AfterSignContext {
   };
 }
 
-function resolveSignIdentity(): string | null {
+function signingInfoFromApp(appPath: string): { identity: string; adhoc: boolean } | null {
+  const result = spawnSync("codesign", ["--display", "--verbose=2", appPath], {
+    encoding: "utf8",
+  });
+  const text = `${result.stdout}\n${result.stderr}`;
+  if (result.status !== 0) {
+    return null;
+  }
+
+  if (/Signature=adhoc/i.test(text)) {
+    return { identity: "-", adhoc: true };
+  }
+
+  for (const line of text.split("\n")) {
+    if (!line.startsWith("Authority=")) {
+      continue;
+    }
+    const authority = line.slice("Authority=".length).trim();
+    if (authority.startsWith("Apple")) {
+      continue;
+    }
+    return { identity: authority, adhoc: false };
+  }
+
+  return null;
+}
+
+function resolveSignIdentity(appPath: string): string | null {
   const hasCert = Boolean(process.env.CSC_LINK?.trim());
   const hasPassword = Boolean(process.env.CSC_KEY_PASSWORD?.trim());
+
   if (!hasCert || !hasPassword) {
     return "-";
   }
-  return process.env.CSC_NAME ?? process.env.CSC_IDENTITY ?? null;
+
+  const fromEnv = process.env.CSC_NAME?.trim() || process.env.CSC_IDENTITY?.trim();
+  if (fromEnv) {
+    return fromEnv;
+  }
+
+  const fromApp = signingInfoFromApp(appPath);
+  if (fromApp) {
+    return fromApp.identity;
+  }
+
+  return "-";
 }
 
 function isMachO(filePath: string): boolean {
@@ -53,14 +92,18 @@ function collectMachOFiles(root: string): string[] {
   }
   for (const entry of readdirSync(root)) {
     const path = join(root, entry);
-    const stat = statSync(path);
-    if (stat.isDirectory()) {
+    const st = statSync(path);
+    if (st.isDirectory()) {
       results.push(...collectMachOFiles(path));
-    } else if (stat.isFile() && isMachO(path)) {
+    } else if (st.isFile() && isMachO(path)) {
       results.push(path);
     }
   }
   return results;
+}
+
+function signDepth(path: string): number {
+  return path.split("/").length;
 }
 
 function codesign(args: string[]): void {
@@ -72,22 +115,26 @@ export default async function afterSign(context: AfterSignContext): Promise<void
     return;
   }
 
-  const identity = resolveSignIdentity();
+  const appPath = join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`);
+  const identity = resolveSignIdentity(appPath);
   if (!identity) {
+    console.warn("after-sign-mac: could not resolve signing identity; skipping embedded binary signing");
     return;
   }
 
-  const appPath = join(context.appOutDir, `${context.packager.appInfo.productFilename}.app`);
   const binDir = join(appPath, "Contents/Resources/bin");
   const entitlementsInherit = join(context.packager.projectDir, "build/entitlements.mac.inherit.plist");
   const entitlementsApp = join(context.packager.projectDir, "build/entitlements.mac.plist");
 
   const extras = collectMachOFiles(binDir);
   if (extras.length === 0) {
+    console.warn(`after-sign-mac: no Mach-O files under ${binDir}`);
     return;
   }
 
-  for (const file of extras.sort()) {
+  const sorted = extras.sort((a, b) => signDepth(b) - signDepth(a));
+
+  for (const file of sorted) {
     codesign([
       "--force",
       "--sign",
@@ -103,6 +150,7 @@ export default async function afterSign(context: AfterSignContext): Promise<void
 
   codesign([
     "--force",
+    "--deep",
     "--sign",
     identity,
     "--options",
