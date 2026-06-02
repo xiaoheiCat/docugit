@@ -1,8 +1,40 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import i18n from "../i18n/index.ts";
 import type { RuntimeInfo, UpdateStatus } from "../../shared/types.ts";
 import { GlassButton, GlassPanel } from "./GlassPanel.tsx";
+
+function formatUpdateStatus(status: UpdateStatus, t: TFunction): string | null {
+  switch (status.state) {
+    case "not-available":
+      return t("update.upToDate");
+    case "dev-skipped":
+      return t("update.devSkipped");
+    case "error":
+      return t("update.error", { message: status.message });
+    case "available":
+      return t("update.available", { version: status.version });
+    case "downloading":
+      return t("update.downloading", { percent: Math.round(status.percent) });
+    case "downloaded":
+      return t("update.ready", { version: status.version });
+    default:
+      return null;
+  }
+}
+
+function isUpdateBusy(status: UpdateStatus): boolean {
+  return (
+    status.state === "checking" ||
+    status.state === "available" ||
+    status.state === "downloading"
+  );
+}
+
+function isManualCheckBlocked(status: UpdateStatus): boolean {
+  return isUpdateBusy(status) || status.state === "downloaded";
+}
 
 interface SettingsDialogProps {
   open: boolean;
@@ -16,7 +48,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [appVersion, setAppVersion] = useState<string | null>(null);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
-  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [updateBusy, setUpdateBusy] = useState(false);
+  const [manualCheckBlocked, setManualCheckBlocked] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -25,33 +58,26 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
       void window.docugitDesktop.getSetting("language").then((value) => {
         if (value) setLanguage(value);
       });
-      setUpdateMessage(null);
-      setCheckingUpdate(false);
+      void window.docugitDesktop.checkForUpdates().then((started) => {
+        if (started) {
+          setUpdateMessage(null);
+          setUpdateBusy(true);
+          setManualCheckBlocked(true);
+        }
+      });
     }
   }, [open]);
 
   useEffect(() => {
-    if (!open || !checkingUpdate) {
+    if (!open) {
       return;
     }
     return window.docugitDesktop.onUpdateStatus((status: UpdateStatus) => {
-      if (status.state === "checking") {
-        return;
-      }
-      setCheckingUpdate(false);
-      if (status.state === "not-available") {
-        setUpdateMessage(t("update.upToDate"));
-      } else if (status.state === "dev-skipped") {
-        setUpdateMessage(t("update.devSkipped"));
-      } else if (status.state === "error") {
-        setUpdateMessage(t("update.error", { message: status.message }));
-      } else if (status.state === "available") {
-        setUpdateMessage(t("update.available", { version: status.version }));
-      } else if (status.state === "downloaded") {
-        setUpdateMessage(t("update.ready", { version: status.version }));
-      }
+      setUpdateMessage(formatUpdateStatus(status, t));
+      setUpdateBusy(isUpdateBusy(status));
+      setManualCheckBlocked(isManualCheckBlocked(status));
     });
-  }, [open, checkingUpdate, t]);
+  }, [open, t]);
 
   if (!open) return null;
 
@@ -63,13 +89,17 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
   }
 
   async function handleCheckForUpdates(): Promise<void> {
+    const started = await window.docugitDesktop.checkForUpdates();
+    if (!started) {
+      return;
+    }
     setUpdateMessage(null);
-    setCheckingUpdate(true);
-    await window.docugitDesktop.checkForUpdates();
+    setUpdateBusy(true);
+    setManualCheckBlocked(true);
   }
 
-  const updateStatusText = checkingUpdate
-    ? t("update.checking")
+  const updateStatusText = updateBusy
+    ? t("update.inProgress")
     : updateMessage ??
       (appVersion === "0.0.0-dev" ? t("update.devSkipped") : t("update.idle"));
 
@@ -95,10 +125,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
               <span className="settings-update-row__status">{updateStatusText}</span>
               <GlassButton
                 className="settings-update-row__action"
-                disabled={checkingUpdate}
+                disabled={manualCheckBlocked}
                 onClick={() => void handleCheckForUpdates()}
               >
-                {t("update.check")}
+                {updateBusy ? t("update.inProgress") : t("update.check")}
               </GlassButton>
             </div>
             {runtime ? (

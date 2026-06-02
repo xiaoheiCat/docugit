@@ -153,7 +153,7 @@ export interface DocuGitDesktopApi {
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
   getAppVersion(): Promise<string>;
-  checkForUpdates(): Promise<void>;
+  checkForUpdates(): Promise<boolean>;
   quitAndInstall(): Promise<void>;
   onUpdateStatus(listener: (status: UpdateStatus) => void): () => void;
 }

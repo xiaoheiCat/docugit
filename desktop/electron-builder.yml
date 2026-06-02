@@ -36,4 +36,6 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
-  differentialPackage: true
+  # Differential NSIS updates can uninstall the old build then fail to apply the
+  # patch, leaving only Uninstall.exe in the install directory (electron-builder #9181).
+  differentialPackage: false

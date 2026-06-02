@@ -41,16 +41,17 @@ function fileEntries(doc: UpdateMetadata): UpdateFileEntry[] {
   return [];
 }
 
-function mergeMacMetadata(dir: string): void {
-  const sources = findFiles(
-    dir,
-    (name) => name === "latest-mac.yml" || /^latest-mac-\d+\.yml$/.test(name),
-  );
+function mergeUpdateMetadata(
+  dir: string,
+  outputName: string,
+  sourceMatcher: (name: string) => boolean,
+): void {
+  const sources = findFiles(dir, sourceMatcher);
   if (sources.length === 0) {
     return;
   }
 
-  const output = join(dir, "latest-mac.yml");
+  const output = join(dir, outputName);
 
   if (sources.length === 1) {
     const doc = readFileSync(sources[0]!, "utf-8");
@@ -97,4 +98,13 @@ if (!targetDir) {
   process.exit(1);
 }
 
-mergeMacMetadata(targetDir);
+mergeUpdateMetadata(
+  targetDir,
+  "latest-mac.yml",
+  (name) => name === "latest-mac.yml" || /^latest-mac-\d+\.yml$/.test(name),
+);
+mergeUpdateMetadata(
+  targetDir,
+  "latest.yml",
+  (name) => name === "latest.yml" || /^latest-win-\d+\.yml$/.test(name),
+);

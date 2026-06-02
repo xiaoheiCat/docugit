@@ -10,6 +10,8 @@ type AutoUpdater = typeof electronUpdater.autoUpdater;
 let status: UpdateStatus = { state: "idle" };
 let autoUpdaterInstance: AutoUpdater | null | undefined;
 let autoUpdaterUnavailable = false;
+let checkInProgress = false;
+let downloadInProgress = false;
 
 function getAutoUpdater(): AutoUpdater | null {
   if (autoUpdaterUnavailable) {
@@ -42,6 +44,30 @@ function setStatus(next: UpdateStatus): void {
   broadcastStatus();
 }
 
+function canStartUpdateCheck(): boolean {
+  if (checkInProgress || downloadInProgress) {
+    return false;
+  }
+  return status.state !== "checking" && status.state !== "downloading" && status.state !== "downloaded";
+}
+
+function resetUpdateActivity(): void {
+  checkInProgress = false;
+  downloadInProgress = false;
+}
+
+function startDownload(autoUpdater: AutoUpdater, version: string): void {
+  if (downloadInProgress || status.state === "downloaded" || status.state === "downloading") {
+    return;
+  }
+  downloadInProgress = true;
+  setStatus({ state: "available", version });
+  void autoUpdater.downloadUpdate().catch((error: Error) => {
+    downloadInProgress = false;
+    setStatus({ state: "error", message: error.message });
+  });
+}
+
 export function getUpdateStatus(): UpdateStatus {
   return status;
 }
@@ -58,19 +84,23 @@ export function initAutoUpdater(): void {
 
   // DocuGit release tags are calver (v2026.06.02_…), not semver prerelease channels.
   autoUpdater.allowPrerelease = false;
-  autoUpdater.autoDownload = true;
+  autoUpdater.disableDifferentialDownload = true;
+  autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.logger = null;
 
   autoUpdater.on("checking-for-update", () => {
+    checkInProgress = true;
     setStatus({ state: "checking" });
   });
 
   autoUpdater.on("update-available", (info) => {
-    setStatus({ state: "available", version: info.version });
+    checkInProgress = false;
+    startDownload(autoUpdater, info.version);
   });
 
   autoUpdater.on("update-not-available", () => {
+    checkInProgress = false;
     setStatus({ state: "not-available" });
   });
 
@@ -79,28 +109,40 @@ export function initAutoUpdater(): void {
   });
 
   autoUpdater.on("update-downloaded", (info) => {
+    downloadInProgress = false;
     setStatus({ state: "downloaded", version: info.version });
   });
 
   autoUpdater.on("error", (error) => {
+    resetUpdateActivity();
     setStatus({ state: "error", message: error.message });
   });
 
   setTimeout(() => {
-    void autoUpdater.checkForUpdates();
+    checkForUpdates();
   }, 5000);
 }
 
-export function checkForUpdates(): void {
+export function checkForUpdates(): boolean {
   if (!app.isPackaged) {
     setStatus({ state: "dev-skipped" });
-    return;
+    return false;
   }
   const autoUpdater = getAutoUpdater();
   if (!autoUpdater) {
-    return;
+    return false;
   }
-  void autoUpdater.checkForUpdates();
+  if (!canStartUpdateCheck()) {
+    return false;
+  }
+
+  checkInProgress = true;
+  setStatus({ state: "checking" });
+  void autoUpdater.checkForUpdates().catch((error: Error) => {
+    checkInProgress = false;
+    setStatus({ state: "error", message: error.message });
+  });
+  return true;
 }
 
 export function quitAndInstall(): void {
@@ -108,5 +150,6 @@ export function quitAndInstall(): void {
   if (!autoUpdater) {
     return;
   }
-  autoUpdater.quitAndInstall();
+  // Silent NSIS install + relaunch; default non-silent updates are flaky on Windows.
+  autoUpdater.quitAndInstall(true, true);
 }

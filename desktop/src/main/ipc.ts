@@ -148,9 +148,7 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle("update:status", () => getUpdateStatus());
 
-  ipcMain.handle("update:check", () => {
-    checkForUpdates();
-  });
+  ipcMain.handle("update:check", () => checkForUpdates());
 
   ipcMain.handle("update:quitAndInstall", () => {
     quitAndInstall();
