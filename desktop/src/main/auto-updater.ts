@@ -1,10 +1,35 @@
+import { createRequire } from "node:module";
 import { app, BrowserWindow } from "electron";
-import electronUpdater from "electron-updater";
+import type electronUpdater from "electron-updater";
 import type { UpdateStatus } from "../shared/types.ts";
 
-const { autoUpdater } = electronUpdater;
+const require = createRequire(import.meta.url);
+
+type AutoUpdater = typeof electronUpdater.autoUpdater;
 
 let status: UpdateStatus = { state: "idle" };
+let autoUpdaterInstance: AutoUpdater | null | undefined;
+let autoUpdaterUnavailable = false;
+
+function getAutoUpdater(): AutoUpdater | null {
+  if (autoUpdaterUnavailable) {
+    return null;
+  }
+  if (autoUpdaterInstance) {
+    return autoUpdaterInstance;
+  }
+  try {
+    // Access is lazy: electron-updater validates app.getVersion() on first read.
+    const { autoUpdater } = require("electron-updater") as typeof import("electron-updater");
+    autoUpdaterInstance = autoUpdater;
+    return autoUpdater;
+  } catch (error) {
+    autoUpdaterUnavailable = true;
+    const message = error instanceof Error ? error.message : String(error);
+    setStatus({ state: "error", message });
+    return null;
+  }
+}
 
 function broadcastStatus(): void {
   for (const win of BrowserWindow.getAllWindows()) {
@@ -23,6 +48,11 @@ export function getUpdateStatus(): UpdateStatus {
 
 export function initAutoUpdater(): void {
   if (!app.isPackaged) {
+    return;
+  }
+
+  const autoUpdater = getAutoUpdater();
+  if (!autoUpdater) {
     return;
   }
 
@@ -64,9 +94,17 @@ export function checkForUpdates(): void {
     setStatus({ state: "dev-skipped" });
     return;
   }
+  const autoUpdater = getAutoUpdater();
+  if (!autoUpdater) {
+    return;
+  }
   void autoUpdater.checkForUpdates();
 }
 
 export function quitAndInstall(): void {
+  const autoUpdater = getAutoUpdater();
+  if (!autoUpdater) {
+    return;
+  }
   autoUpdater.quitAndInstall();
 }

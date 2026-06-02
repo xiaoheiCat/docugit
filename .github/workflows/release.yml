@@ -233,18 +233,7 @@ jobs:
           cd desktop
           bun install
           bun run build
-          normalize_desktop_version() {
-            local raw="$1"
-            if [[ "$raw" =~ ^([0-9]{4})\.([0-9]{2})\.([0-9]{2})_([0-9]{2}\.[0-9]{2}\.[0-9]{2})_([a-f0-9]+)$ ]]; then
-              local y="${BASH_REMATCH[1]}"
-              local mo=$((10#${BASH_REMATCH[2]}))
-              local d=$((10#${BASH_REMATCH[3]}))
-              echo "${y}.${mo}.${d}-${y}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}.${BASH_REMATCH[4]}.${BASH_REMATCH[5]}"
-            else
-              echo "$raw"
-            fi
-          }
-          DESKTOP_SEMVER="$(normalize_desktop_version "${DOCUGIT_DESKTOP_VERSION}")"
+          DESKTOP_SEMVER="$(bun run scripts/pkg-version-to-semver.ts "${DOCUGIT_DESKTOP_VERSION}")"
           if [ "${{ matrix.platform }}" = "windows" ]; then
             npx electron-builder --config electron-builder.yml --win --${{ matrix.electron_arch }} --publish never \
               -c.extraMetadata.version="${DESKTOP_SEMVER}"
@@ -382,7 +371,6 @@ jobs:
           tag_name: ${{ needs.prepare.outputs.version_tag }}
           name: ${{ needs.prepare.outputs.version_tag }}
           generate_release_notes: true
-          overwrite_files: true
           files: |
             release/bin/*
             release/install/*
