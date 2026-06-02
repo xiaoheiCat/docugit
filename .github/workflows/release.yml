@@ -258,7 +258,7 @@ jobs:
         run: |
           mkdir -p desktop/release/upload
           find desktop/release -maxdepth 1 -type f \( \
-            -name '*.dmg' -o -name '*.exe' -o -name '*.blockmap' -o -name 'latest*.yml' \
+            -name '*.dmg' -o -name '*.zip' -o -name '*.exe' -o -name '*.blockmap' -o -name 'latest*.yml' \
           \) -exec cp {} desktop/release/upload/ \;
           ls -la desktop/release/upload/
 
@@ -310,7 +310,7 @@ jobs:
           find dist/bin -mindepth 2 -type f -exec cp {} release/bin/ \;
           find release/bin -type f ! -name '*.exe' -exec chmod +x {} +
           find dist/msi -name '*.msi' -exec cp {} release/install/ \; 2>/dev/null || true
-          find dist/desktop -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.blockmap' \) -exec cp {} release/desktop/ \; 2>/dev/null || true
+          find dist/desktop -type f \( -name '*.dmg' -o -name '*.zip' -o -name '*.exe' -o -name '*.blockmap' \) -exec cp {} release/desktop/ \; 2>/dev/null || true
           idx=0
           while IFS= read -r f; do
             cp "$f" "release/desktop/latest-mac-${idx}.yml"
@@ -338,6 +338,24 @@ jobs:
             echo "error: latest.yml must not set top-level path (electron-updater would ignore arch)" >&2
             exit 1
           fi
+          for arch in x64 arm64; do
+            if [ ! -f "release/desktop/latest-${arch}.yml" ]; then
+              echo "error: missing release/desktop/latest-${arch}.yml" >&2
+              exit 1
+            fi
+          done
+          if ! grep -qE '\-x64\.zip' release/desktop/latest-mac.yml \
+            || ! grep -qE '\-arm64\.zip' release/desktop/latest-mac.yml; then
+            echo "error: latest-mac.yml must include both macOS x64 and arm64 zip (Squirrel.Mac auto-update)" >&2
+            cat release/desktop/latest-mac.yml >&2
+            exit 1
+          fi
+          for arch in x64 arm64; do
+            if [ ! -f "release/desktop/latest-${arch}-mac.yml" ]; then
+              echo "error: missing release/desktop/latest-${arch}-mac.yml" >&2
+              exit 1
+            fi
+          done
           ls -la release/bin/
           ls -la release/install/ || true
           ls -la release/desktop/ || true
@@ -406,6 +424,7 @@ jobs:
             "release/bin/*" \
             "release/install/*" \
             "release/desktop/*.dmg" \
+            "release/desktop/*.zip" \
             "release/desktop/*.exe" \
             "release/desktop/*.blockmap" \
             "release/desktop/latest*.yml"; do

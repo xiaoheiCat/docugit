@@ -41,24 +41,25 @@ function fileEntries(doc: UpdateMetadata): UpdateFileEntry[] {
   return [];
 }
 
-/** Installer arch from electron-builder artifact names (…-x64.exe / …-arm64.dmg). */
+/** Installer arch from electron-builder artifact names (…-x64.exe / …-arm64.dmg / …-x64.zip). */
 function installerArchFromUrl(url: string): "x64" | "arm64" | null {
-  if (/-arm64\.(exe|dmg)$/i.test(url)) {
+  if (/-arm64\.(exe|dmg|zip)$/i.test(url)) {
     return "arm64";
   }
-  if (/-x64\.(exe|dmg)$/i.test(url)) {
+  if (/-x64\.(exe|dmg|zip)$/i.test(url)) {
     return "x64";
   }
   return null;
 }
 
+function sortKey(url: string): string {
+  const arch = installerArchFromUrl(url) ?? "z";
+  const kind = /\.zip$/i.test(url) ? "0" : /\.(exe|dmg)$/i.test(url) ? "1" : "2";
+  return `${arch === "x64" ? "0" : "1"}-${kind}-${url}`;
+}
+
 function sortFileEntries(files: UpdateFileEntry[]): UpdateFileEntry[] {
-  return [...files].sort((a, b) => {
-    const order = { x64: 0, arm64: 1 };
-    const archA = installerArchFromUrl(a.url ?? "") ?? "arm64";
-    const archB = installerArchFromUrl(b.url ?? "") ?? "arm64";
-    return order[archA] - order[archB];
-  });
+  return [...files].sort((a, b) => sortKey(a.url ?? "").localeCompare(sortKey(b.url ?? "")));
 }
 
 /** electron-updater on Windows uses `files[]`; top-level `path` forces one arch for all. */
@@ -123,6 +124,30 @@ function mergeMacMetadata(dir: string): void {
     "latest-mac.yml",
     (name) => name === "latest-mac.yml" || /^latest-mac-\d+\.yml$/.test(name),
   );
+  writeMacArchChannelFiles(dir);
+}
+
+/** Squirrel.Mac reads latest-{arch}-mac.yml and requires a .zip entry (not dmg). */
+function writeMacArchChannelFiles(dir: string): void {
+  const mergedPath = join(dir, "latest-mac.yml");
+  const doc = load(readFileSync(mergedPath, "utf-8")) as UpdateMetadata;
+  const normalized = normalizeMetadata(doc);
+  for (const arch of ["x64", "arm64"] as const) {
+    const zipEntry = normalized.files.find(
+      (f) => installerArchFromUrl(f.url ?? "") === arch && /\.zip$/i.test(f.url ?? ""),
+    );
+    if (!zipEntry) {
+      throw new Error(`missing macOS ${arch} zip in merged latest-mac.yml`);
+    }
+    writeFileSync(
+      join(dir, `latest-${arch}-mac.yml`),
+      dump({
+        version: normalized.version,
+        releaseDate: normalized.releaseDate,
+        files: [zipEntry],
+      }),
+    );
+  }
 }
 
 function mergeWinMetadata(dir: string): void {
@@ -131,6 +156,28 @@ function mergeWinMetadata(dir: string): void {
     "latest.yml",
     (name) => name === "latest.yml" || /^latest-win-\d+\.yml$/.test(name),
   );
+  writeWinArchChannelFiles(dir);
+}
+
+/** Per-arch feeds so Windows clients never read a shared latest.yml with the wrong path. */
+function writeWinArchChannelFiles(dir: string): void {
+  const mergedPath = join(dir, "latest.yml");
+  const doc = load(readFileSync(mergedPath, "utf-8")) as UpdateMetadata;
+  const normalized = normalizeMetadata(doc);
+  for (const arch of ["x64", "arm64"] as const) {
+    const entry = normalized.files.find((f) => installerArchFromUrl(f.url ?? "") === arch);
+    if (!entry) {
+      throw new Error(`missing Windows ${arch} installer in merged latest.yml`);
+    }
+    writeFileSync(
+      join(dir, `latest-${arch}.yml`),
+      dump({
+        version: normalized.version,
+        releaseDate: normalized.releaseDate,
+        files: [entry],
+      }),
+    );
+  }
 }
 
 const targetDir = process.argv[2];

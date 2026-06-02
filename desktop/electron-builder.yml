@@ -21,8 +21,10 @@ extraResources:
     to: icon.png
 mac:
   category: public.app-category.productivity
+  # dmg for manual install; zip required by Squirrel.Mac / electron-updater (cannot auto-update from dmg alone).
   target:
     - dmg
+    - zip
   artifactName: docugit-desktop-darwin-${version}-${arch}.${ext}
   hardenedRuntime: true
   gatekeeperAssess: false
