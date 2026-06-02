@@ -97,15 +97,18 @@ jobs:
         run: |
           set -euo pipefail
           bun run embed-templates
-          ICON_ARGS=()
           if [ "${{ matrix.ext }}" = ".exe" ]; then
-            ICON_ARGS=(--windows-icon=assets/icon.ico)
+            bun build src/cli/index.ts --compile \
+              --target=${{ matrix.target }} \
+              --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
+              --windows-icon=assets/icon.ico \
+              --outfile "dist/${{ matrix.artifact }}${{ matrix.ext }}"
+          else
+            bun build src/cli/index.ts --compile \
+              --target=${{ matrix.target }} \
+              --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
+              --outfile "dist/${{ matrix.artifact }}${{ matrix.ext }}"
           fi
-          bun build src/cli/index.ts --compile \
-            --target=${{ matrix.target }} \
-            --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
-            "${ICON_ARGS[@]}" \
-            --outfile "dist/${{ matrix.artifact }}${{ matrix.ext }}"
 
       - name: Install WiX Toolset
         if: runner.os == 'Windows'
@@ -197,15 +200,18 @@ jobs:
             windows-latest) target=bun-windows-x64 ;;
           esac
           bun run embed-templates
-          ICON_ARGS=()
           if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            ICON_ARGS=(--windows-icon=assets/icon.ico)
+            bun build src/cli/index.ts --compile \
+              --target=$target \
+              --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
+              --windows-icon=assets/icon.ico \
+              --outfile "dist/${{ matrix.docugit_bin }}"
+          else
+            bun build src/cli/index.ts --compile \
+              --target=$target \
+              --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
+              --outfile "dist/${{ matrix.docugit_bin }}"
           fi
-          bun build src/cli/index.ts --compile \
-            --target=$target \
-            --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
-            "${ICON_ARGS[@]}" \
-            --outfile "dist/${{ matrix.docugit_bin }}"
 
       - name: Stage docugit for electron-builder
         shell: bash

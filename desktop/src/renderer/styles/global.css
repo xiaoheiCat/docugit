@@ -638,7 +638,7 @@ html[data-platform="darwin"] .top-nav {
 
 .welcome-repo-item {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 8px;
 }
 
@@ -697,6 +697,7 @@ html[data-platform="darwin"] .top-nav {
   width: 16px;
   height: 16px;
   display: block;
+  transform: translateY(1px);
 }
 
 .delete-icon-btn:hover:not(:disabled) {
@@ -1179,7 +1180,7 @@ html[data-platform="darwin"] .top-nav {
 
 .branch-picker__row {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 6px;
 }
 
