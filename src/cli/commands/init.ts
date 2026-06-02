@@ -1,10 +1,17 @@
 import { resolve } from "node:path";
-import { initRepoFromFile, newRepo, exportDocument, getRepoRoot, resolveNewRepoTarget } from "../../utils/repo.ts";
+import {
+  initRepoFromFile,
+  newRepo,
+  exportDocument,
+  getRepoRoot,
+  resolveNewRepoTarget,
+  resolveInitRepoTarget,
+} from "../../utils/repo.ts";
 import type { DocumentType } from "../../config/docugit-yml.ts";
 
 export async function runInit(file: string, dir?: string): Promise<number> {
-  const target = resolve(dir ?? ".");
   try {
+    const target = await resolveInitRepoTarget(dir ?? ".", file);
     await initRepoFromFile(resolve(file), target);
     console.log(`Initialized DocuGit repository: ${target}`);
     return 0;

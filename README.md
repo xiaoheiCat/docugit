@@ -129,12 +129,12 @@ my-doc/
 
 | Command | Description |
 |---------|-------------|
-| `docugit init <file>` | Initialize a repo from an Office file |
+| `docugit init <file> [-d dir]` | Initialize a repo from an Office file (empty `dir` → repo root; else `<document-base>/`) |
 | `docugit new <type> <name>` | Create a blank docx/xlsx/pptx repo |
 | `docugit clone <url>` | Clone a remote repository |
 | `docugit open` | Open in Office for editing |
 | `docugit restore [-y]` | Discard the open session |
-| `docugit import <file> [-y]` | Import an external Office file and commit as a new version |
+| `docugit import <file> [-y] [-m msg]` | Import an external Office file and commit as a new version |
 | `docugit export [path]` | Export an Office file (default: `../<document>`) |
 | `docugit name` | Show document filename |
 | `docugit rename <name>` | Rename document filename |

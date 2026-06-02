@@ -35,15 +35,16 @@ export async function initRepoFromFile(
   await mkdir(targetDir, { recursive: true });
   await unpackFromFile(sourceFile, targetDir);
 
+  const originalName = sourceFile.split(/[/\\]/).pop() ?? `document.${type}`;
+  const config = createDefaultConfig(type, originalName, authors);
+  await writeConfig(targetDir, config);
+
   const { repairOoxmlPackage } = await import("../ooxml/repair.ts");
   await repairOoxmlPackage(targetDir, {
     sourceFileDir: resolve(dirname(sourceFile)),
     documentType: type,
   });
 
-  const originalName = sourceFile.split(/[/\\]/).pop() ?? `document.${type}`;
-  const config = createDefaultConfig(type, originalName, authors);
-  await writeConfig(targetDir, config);
   await generateReadme(targetDir, config);
 
   if (!isGitRepo(targetDir)) {
@@ -82,9 +83,9 @@ function documentBaseName(name: string, type: DocumentType): string {
 }
 
 /** Empty `-d` dir gets the repo; non-empty dirs get `<document-base>/` underneath. */
-export async function resolveNewRepoTarget(
+async function resolveRepoTargetInParent(
   parentDir: string,
-  name: string,
+  documentName: string,
   type: DocumentType,
 ): Promise<string> {
   const parent = resolve(parentDir);
@@ -92,11 +93,30 @@ export async function resolveNewRepoTarget(
     return parent;
   }
 
-  const subdir = join(parent, documentBaseName(name, type));
+  const subdir = join(parent, documentBaseName(documentName, type));
   if (!(await isDirectoryEmpty(subdir))) {
     throw new Error(`fatal: ${subdir} already exists and is not empty`);
   }
   return subdir;
+}
+
+export async function resolveNewRepoTarget(
+  parentDir: string,
+  name: string,
+  type: DocumentType,
+): Promise<string> {
+  return resolveRepoTargetInParent(parentDir, name, type);
+}
+
+export async function resolveInitRepoTarget(parentDir: string, sourceFile: string): Promise<string> {
+  const resolved = resolve(sourceFile);
+  const type = detectDocumentType(resolved);
+  if (!type) {
+    throw new Error("fatal: unsupported file type; use .docx, .xlsx, or .pptx");
+  }
+
+  const originalName = resolved.split(/[/\\]/).pop() ?? `document.${type}`;
+  return resolveRepoTargetInParent(parentDir, originalName, type);
 }
 
 export async function newRepo(

@@ -73,6 +73,7 @@ docugit export ./final.docx
 cd my-doc-repo
 docugit import ../edited-offline.docx
 docugit import ../edited-offline.docx -y
+docugit import ../edited-offline.docx -m "Import revised draft from email"
 ```
 
 ### 文档名称
@@ -87,12 +88,12 @@ docugit commit -m "rename document"
 
 | 命令 | 参数 |
 |------|------|
-| `init` | `<file> [-d dir]` |
+| `init` | `<file> [-d dir]` (empty `dir` → repo root; else `<document-base>/`) |
 | `new` | `<docx\|xlsx\|pptx> <name> [-d dir]` |
 | `clone` | `<url> [dir]` |
 | `open` | |
 | `restore` | `[-y]` |
-| `import` | `<file> [-y]` |
+| `import` | `<file> [-y] [-m message]` |
 | `export` | `[output]` (default: `../<document>`) |
 | `name` | |
 | `rename` | `<name>` |

@@ -23,7 +23,7 @@ async function confirmImport(force: boolean, sourceFile: string): Promise<boolea
   }
 }
 
-export async function runImport(file: string, force: boolean): Promise<number> {
+export async function runImport(file: string, force: boolean, message: string[] = []): Promise<number> {
   const repoRoot = getRepoRoot();
   const sourceFile = resolve(file);
 
@@ -43,7 +43,7 @@ export async function runImport(file: string, force: boolean): Promise<number> {
   try {
     await applyImportFromFile(repoRoot, resolved, type);
     console.log(`Imported: ${resolved}`);
-    return runCommit([]);
+    return runCommit(message);
   } catch (err) {
     console.error(err instanceof Error ? err.message : err);
     return 1;

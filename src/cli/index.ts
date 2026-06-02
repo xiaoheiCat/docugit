@@ -88,8 +88,10 @@ async function main(): Promise<void> {
     .description("Import an external Office file as a new version")
     .argument("<file>", "Office file path (.docx/.xlsx/.pptx)")
     .option("-y", "Import without confirmation")
-    .action(async (file: string, opts: { y?: boolean }) => {
-      process.exit(await runImport(file, Boolean(opts.y)));
+    .option("-m, --message <message>", "Commit message")
+    .action(async (file: string, opts: { y?: boolean; message?: string }) => {
+      const message = opts.message ? [opts.message] : [];
+      process.exit(await runImport(file, Boolean(opts.y), message));
     });
 
   program
