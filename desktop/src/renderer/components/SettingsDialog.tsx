@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import i18n from "../i18n/index.ts";
 import type { RuntimeInfo, UpdateStatus } from "../../shared/types.ts";
+import { useUiTheme } from "../theme/UiThemeContext.tsx";
+import type { UiTheme } from "../theme/ui-theme.ts";
 import { GlassButton, GlassPanel } from "./GlassPanel.tsx";
 
 function formatUpdateStatus(status: UpdateStatus, t: TFunction): string | null {
@@ -43,6 +45,7 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JSX.Element | null {
   const { t } = useTranslation();
+  const { theme, setTheme } = useUiTheme();
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [language, setLanguage] = useState(i18n.language);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -88,6 +91,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
     await window.docugitDesktop.setSetting("language", next);
   }
 
+  async function changeTheme(next: UiTheme): Promise<void> {
+    await setTheme(next);
+  }
+
   async function handleCheckForUpdates(): Promise<void> {
     const started = await window.docugitDesktop.checkForUpdates();
     if (!started) {
@@ -114,6 +121,13 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
               <select value={language} onChange={(e) => void changeLanguage(e.target.value)}>
                 <option value="en">{t("lang.en")}</option>
                 <option value="zh">{t("lang.zh")}</option>
+              </select>
+            </label>
+            <label className="settings-field">
+              <span>{t("settings.theme")}</span>
+              <select value={theme} onChange={(e) => void changeTheme(e.target.value as UiTheme)}>
+                <option value="liquid">{t("settings.themeLiquid")}</option>
+                <option value="frosted">{t("settings.themeFrosted")}</option>
               </select>
             </label>
             <div className="settings-field">

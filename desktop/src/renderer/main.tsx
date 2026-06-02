@@ -1,8 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import { UiThemeProvider } from "./theme/UiThemeContext.tsx";
+import { applyUiTheme, readLocalUiTheme } from "./theme/ui-theme.ts";
 import "./styles/global.css";
 import "./i18n/index.ts";
+
+applyUiTheme(readLocalUiTheme());
 
 const platform =
   window.docugitDesktop?.platform ??
@@ -18,7 +22,9 @@ if (!window.docugitDesktop) {
 } else {
   createRoot(root!).render(
     <StrictMode>
-      <App />
+      <UiThemeProvider>
+        <App />
+      </UiThemeProvider>
     </StrictMode>,
   );
 }

@@ -1,4 +1,5 @@
 import { useId, useState, type CSSProperties, type ReactNode } from "react";
+import { useUiTheme } from "../theme/UiThemeContext.tsx";
 import { onGlassMouseLeave, onGlassMouseMove } from "./glass-interaction.ts";
 import "../styles/LiquidGlass.css";
 
@@ -10,7 +11,7 @@ interface GlassLayersProps {
   filterId: string;
 }
 
-function GlassLayers({ filterId }: GlassLayersProps): React.JSX.Element {
+function LiquidGlassLayers({ filterId }: GlassLayersProps): React.JSX.Element {
   const filterUrl = `url(#${filterId}) saturate(120%) brightness(1.15)`;
 
   return (
@@ -25,6 +26,15 @@ function GlassLayers({ filterId }: GlassLayersProps): React.JSX.Element {
       <div className="glass-distortion-overlay" />
       <div className="glass-overlay" />
       <div className="glass-specular" />
+    </>
+  );
+}
+
+function FrostedGlassLayers(): React.JSX.Element {
+  return (
+    <>
+      <div className="glass-filter glass-filter--frosted" />
+      <div className="glass-overlay" />
     </>
   );
 }
@@ -46,19 +56,21 @@ export function GlassPanel({
   variant = "inline",
   onClick,
 }: GlassPanelProps): React.JSX.Element {
+  const { theme } = useUiTheme();
   const filterId = useGlassFilterId("glass-panel");
   const variantClass = variant === "fill" ? "glass-panel--fill" : "glass-panel--inline";
   const contentStyle = padding ? ({ padding } satisfies CSSProperties) : undefined;
+  const isLiquid = theme === "liquid";
 
   return (
     <div
       className={`glass-card ${variantClass} ${className}`.trim()}
       style={style}
       onClick={onClick}
-      onMouseMove={(event) => onGlassMouseMove(event, 0.15)}
-      onMouseLeave={onGlassMouseLeave}
+      onMouseMove={isLiquid ? (event) => onGlassMouseMove(event, 0.15) : undefined}
+      onMouseLeave={isLiquid ? onGlassMouseLeave : undefined}
     >
-      <GlassLayers filterId={filterId} />
+      {isLiquid ? <LiquidGlassLayers filterId={filterId} /> : <FrostedGlassLayers />}
       <div className="glass-content" style={contentStyle}>
         {children}
       </div>
@@ -81,8 +93,10 @@ export function GlassButton({
   disabled = false,
   className = "",
 }: GlassButtonProps): React.JSX.Element {
+  const { theme } = useUiTheme();
   const filterId = useGlassFilterId("glass-button");
   const [pressed, setPressed] = useState(false);
+  const isLiquid = theme === "liquid";
 
   return (
     <button
@@ -92,13 +106,17 @@ export function GlassButton({
       onClick={onClick}
       onMouseDown={() => setPressed(true)}
       onMouseUp={() => setPressed(false)}
-      onMouseMove={(event) => onGlassMouseMove(event, 0.6)}
-      onMouseLeave={(event) => {
-        setPressed(false);
-        onGlassMouseLeave(event);
-      }}
+      onMouseMove={isLiquid ? (event) => onGlassMouseMove(event, 0.6) : undefined}
+      onMouseLeave={
+        isLiquid
+          ? (event) => {
+              setPressed(false);
+              onGlassMouseLeave(event);
+            }
+          : () => setPressed(false)
+      }
     >
-      <GlassLayers filterId={filterId} />
+      {isLiquid ? <LiquidGlassLayers filterId={filterId} /> : <FrostedGlassLayers />}
       <div className="glass-button-content">{children}</div>
     </button>
   );

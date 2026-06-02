@@ -45,6 +45,33 @@
   filter: url(#glass-distortion) saturate(120%) brightness(1.15);
 }
 
+/* Frosted theme: backdrop blur only (no SVG displacement / animation). */
+.glass-filter--frosted {
+  filter: none;
+  backdrop-filter: blur(20px) saturate(110%);
+  -webkit-backdrop-filter: blur(20px) saturate(110%);
+}
+
+[data-ui-theme="frosted"] .glass-card,
+[data-ui-theme="frosted"] .glass-button {
+  transition: opacity 0.2s ease, background 0.2s ease;
+}
+
+[data-ui-theme="frosted"] .glass-button {
+  will-change: auto;
+}
+
+[data-ui-theme="frosted"] .glass-button:hover {
+  transform: none;
+  opacity: 0.92;
+}
+
+[data-ui-theme="frosted"] .glass-button:active,
+[data-ui-theme="frosted"] .glass-button.pressed {
+  transform: none;
+  opacity: 0.85;
+}
+
 .glass-distortion-overlay {
   z-index: 2;
   background:

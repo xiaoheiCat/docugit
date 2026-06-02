@@ -25,6 +25,8 @@ Or reinstall dependencies (`bun install`); `postinstall` runs the same step auto
 
 Managed repositories live in `~/.docugit-desktop/workspaces/<uuid>/<repo-name>/`.
 
+**Settings → Appearance** switches between **Liquid glass** (default, SVG displacement) and **Frosted glass** (backdrop blur only, lower GPU use on laptops). Stored in `settings.json` as `ui.theme`.
+
 Application icons use the shared source at [`../assets/icon.png`](../assets/icon.png). `electron-builder` generates platform `.icns` / `.ico` from that PNG at pack time.
 
 ## Bundled Git
