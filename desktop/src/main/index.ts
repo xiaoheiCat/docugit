@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, Menu, shell } from "electron";
 import { readFileSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -50,6 +50,7 @@ function createWindow(): void {
     minWidth: 960,
     minHeight: 640,
     show: false,
+    autoHideMenuBar: true,
     ...(icon ? { icon } : {}),
     ...(process.platform === "darwin"
       ? {
@@ -65,6 +66,8 @@ function createWindow(): void {
       sandbox: false,
     },
   });
+
+  mainWindow.setMenu(null);
 
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
@@ -83,6 +86,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  Menu.setApplicationMenu(null);
   registerIpcHandlers();
   initAutoUpdater();
   createWindow();
