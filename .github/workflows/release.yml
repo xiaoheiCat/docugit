@@ -365,19 +365,32 @@ jobs:
               -e "s/@SHA256_LINUX_ARM64@/${SHA_LINUX_ARM64}/g" \
             packaging/homebrew/docugit.rb.template > Formula/docugit.rb
 
+      - name: Stage release uploads
+        run: |
+          set -euo pipefail
+          mkdir -p release/upload
+          shopt -s nullglob
+          for pattern in \
+            "release/bin/*" \
+            "release/install/*" \
+            "release/desktop/*.dmg" \
+            "release/desktop/*.exe" \
+            "release/desktop/*.blockmap" \
+            "release/desktop/latest*.yml"; do
+            for file in $pattern; do
+              cp "$file" "release/upload/$(basename "$file")"
+            done
+          done
+          ls -la release/upload/
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.prepare.outputs.version_tag }}
           name: ${{ needs.prepare.outputs.version_tag }}
           generate_release_notes: true
-          files: |
-            release/bin/*
-            release/install/*
-            release/desktop/*.dmg
-            release/desktop/*.exe
-            release/desktop/*.blockmap
-            release/desktop/latest*.yml
+          overwrite_files: false
+          files: release/upload/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
