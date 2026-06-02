@@ -49,3 +49,7 @@ bun run pack
 ```
 
 CI runs `stage-bundled-git.ts` per matrix row before `electron-builder`.
+
+### macOS code signing (auto-update)
+
+Squirrel.Mac requires the running app and the update zip to share a valid code signature. `scripts/after-sign-mac.ts` signs bundled `docugit` and dugite Git under `Contents/Resources/bin`. Without repo secrets `CSC_LINK` / `CSC_KEY_PASSWORD`, CI uses ad-hoc signing (`-`) so auto-update works between releases; add Apple Developer ID secrets for notarized distribution.

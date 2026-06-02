@@ -240,17 +240,30 @@ jobs:
         shell: bash
         env:
           DOCUGIT_DESKTOP_VERSION: ${{ needs.prepare.outputs.pkg_version }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         run: |
           cd desktop
           bun install
           bun run build
           DESKTOP_SEMVER="$(bun run scripts/pkg-version-to-semver.ts "${DOCUGIT_DESKTOP_VERSION}")"
+          MAC_SIGN_ARGS=()
+          if [ "${{ matrix.platform }}" != "windows" ]; then
+            if [ -z "${CSC_LINK:-}" ]; then
+              # Squirrel.Mac requires a consistent signature on app + update zip; ad-hoc when no Apple cert.
+              export CSC_IDENTITY_AUTO_DISCOVERY=false
+              MAC_SIGN_ARGS=(-c.mac.identity=-)
+            fi
+          fi
           if [ "${{ matrix.platform }}" = "windows" ]; then
             npx electron-builder --config electron-builder.yml --win --${{ matrix.electron_arch }} --publish never \
               -c.extraMetadata.version="${DESKTOP_SEMVER}"
           else
             npx electron-builder --config electron-builder.yml --mac --${{ matrix.electron_arch }} --publish never \
-              -c.extraMetadata.version="${DESKTOP_SEMVER}"
+              -c.extraMetadata.version="${DESKTOP_SEMVER}" "${MAC_SIGN_ARGS[@]}"
           fi
 
       - name: Stage desktop installers

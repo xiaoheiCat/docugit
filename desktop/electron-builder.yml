@@ -1,6 +1,7 @@
 appId: com.docugit.desktop
 productName: DocuGit Desktop
 icon: ../assets/icon.png
+afterSign: scripts/after-sign-mac.ts
 publish:
   provider: github
   owner: xiaoheiCat
@@ -28,6 +29,11 @@ mac:
   artifactName: docugit-desktop-darwin-${version}-${arch}.${ext}
   hardenedRuntime: true
   gatekeeperAssess: false
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.inherit.plist
+  # docugit + dugite under Contents/Resources/bin (see scripts/after-sign-mac.ts)
+  binaries:
+    - Contents/Resources/bin/docugit
 dmg:
   writeUpdateInfo: true
 win:
