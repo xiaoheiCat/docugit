@@ -41,6 +41,27 @@ function fileEntries(doc: UpdateMetadata): UpdateFileEntry[] {
   return [];
 }
 
+/** Installer arch from electron-builder artifact names (…-x64.exe / …-arm64.dmg). */
+function installerArchFromUrl(url: string): "x64" | "arm64" | null {
+  if (/-arm64\.(exe|dmg)$/i.test(url)) {
+    return "arm64";
+  }
+  if (/-x64\.(exe|dmg)$/i.test(url)) {
+    return "x64";
+  }
+  return null;
+}
+
+function sortFileEntries(files: UpdateFileEntry[]): UpdateFileEntry[] {
+  return [...files].sort((a, b) => {
+    const order = { x64: 0, arm64: 1 };
+    const archA = installerArchFromUrl(a.url ?? "") ?? "arm64";
+    const archB = installerArchFromUrl(b.url ?? "") ?? "arm64";
+    return order[archA] - order[archB];
+  });
+}
+
+
 function mergeUpdateMetadata(
   dir: string,
   outputName: string,
@@ -69,9 +90,6 @@ function mergeUpdateMetadata(
     const doc = load(readFileSync(source, "utf-8")) as UpdateMetadata;
     if (!merged.version) {
       merged.version = doc.version;
-      merged.path = doc.path;
-      merged.sha512 = doc.sha512;
-      merged.size = doc.size;
       merged.releaseDate = doc.releaseDate;
     }
     for (const entry of fileEntries(doc)) {
@@ -83,6 +101,9 @@ function mergeUpdateMetadata(
       merged.files!.push(entry);
     }
   }
+
+  merged.files = sortFileEntries(merged.files!);
+  // Multi-arch feed: do not set top-level path (CI sort used to pick arm64 first).
 
   writeFileSync(output, dump(merged));
   for (const source of sources) {
