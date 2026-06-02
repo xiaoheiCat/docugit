@@ -1,4 +1,5 @@
 import type { SemanticDiffResult } from "./engine.ts";
+import { formatDiffCompareLabel } from "../utils/diff-refs.ts";
 
 function escapeHtml(text: string): string {
   return text
@@ -106,7 +107,7 @@ export function formatHtmlDiff(result: SemanticDiffResult, title = "DocuGit Diff
 <body>
   <div class="container">
     <h1>${escapeHtml(title)}</h1>
-    <p style="color: var(--muted); margin: 0;">Document type: ${result.documentType}</p>
+    <p style="color: var(--muted); margin: 0;">${escapeHtml(formatDiffCompareLabel(result))}</p>
     <div class="summary">
       <div class="stat added"><strong>${result.summary.added}</strong> added</div>
       <div class="stat removed"><strong>${result.summary.removed}</strong> removed</div>

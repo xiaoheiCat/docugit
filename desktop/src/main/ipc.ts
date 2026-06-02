@@ -9,9 +9,12 @@ import {
   importRepo,
   listWorkspaces,
   removeWorkspace,
+  SESSION_ACTIVE_WORKSPACE_KEY,
+  touchWorkspace,
+  touchWorkspaceSync,
 } from "./workspace-registry.ts";
 import { runDocugit, runGit } from "./cli-spawner.ts";
-import { getDataRoot, resolveDocugit, resolveGit } from "./git-resolver.ts";
+import { getDataRoot, formatDocugitPath, resolveDocugit, resolveGit } from "./git-resolver.ts";
 
 const SETTINGS_FILE = "settings.json";
 
@@ -51,6 +54,13 @@ export function registerIpcHandlers(): void {
 
   ipcMain.handle("workspaces:remove", (_event, id: string) => removeWorkspace(id));
 
+  ipcMain.handle("workspaces:touch", (_event, id: string) => touchWorkspace(id));
+
+  ipcMain.on("workspaces:touchSync", (event, id: string) => {
+    touchWorkspaceSync(id);
+    event.returnValue = true;
+  });
+
   ipcMain.handle("docugit:run", async (_event, workspaceId: string, args: string[]) => {
     const workspace = await getWorkspace(workspaceId);
     return runDocugit(workspace.path, args);
@@ -89,10 +99,29 @@ export function registerIpcHandlers(): void {
     return result.canceled ? null : (result.filePaths[0] ?? null);
   });
 
+  ipcMain.handle(
+    "dialog:pickSaveFile",
+    async (
+      _event,
+      options?: { defaultPath?: string; extension?: "docx" | "xlsx" | "pptx" },
+    ) => {
+      const win = focusedWindow();
+      const extension = options?.extension ?? "docx";
+      const dialogOptions = {
+        defaultPath: options?.defaultPath,
+        filters: [{ name: "Office", extensions: [extension] }],
+      };
+      const result = win
+        ? await dialog.showSaveDialog(win, dialogOptions)
+        : await dialog.showSaveDialog(dialogOptions);
+      return result.canceled ? null : (result.filePath ?? null);
+    },
+  );
+
   ipcMain.handle("runtime:info", () => {
     const git = resolveGit();
     return {
-      docugitPath: resolveDocugit(),
+      docugitPath: formatDocugitPath(resolveDocugit()),
       gitPath: git.path,
       gitSource: git.source,
       dataRoot: getDataRoot(),

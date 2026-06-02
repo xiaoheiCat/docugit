@@ -3,10 +3,20 @@ import { gitOutput } from "./git.ts";
 
 export function parseGitStatus(repoRoot: string): GitStatusJson {
   let branch = "HEAD";
+  let headHash = "";
+  let headShortHash = "";
   let upstream: string | null = null;
   let ahead = 0;
   let behind = 0;
   const files: GitStatusFile[] = [];
+
+  try {
+    headHash = gitOutput(["rev-parse", "HEAD"], repoRoot);
+    headShortHash = gitOutput(["rev-parse", "--short", "HEAD"], repoRoot);
+  } catch {
+    headHash = "";
+    headShortHash = "";
+  }
 
   try {
     const branchLine = gitOutput(["rev-parse", "--abbrev-ref", "HEAD"], repoRoot);
@@ -49,6 +59,8 @@ export function parseGitStatus(repoRoot: string): GitStatusJson {
 
   return {
     branch,
+    headHash,
+    headShortHash,
     upstream,
     ahead,
     behind,

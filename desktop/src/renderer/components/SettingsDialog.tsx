@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n/index.ts";
 import type { RuntimeInfo } from "../../shared/types.ts";
-import { GlassPanel } from "./GlassPanel.tsx";
+import { GlassButton, GlassPanel } from "./GlassPanel.tsx";
 
 interface SettingsDialogProps {
   open: boolean;
@@ -13,6 +13,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
   const { t } = useTranslation();
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [language, setLanguage] = useState(i18n.language);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -34,39 +35,56 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
 
   return (
     <div className="dialog-backdrop no-drag">
-      <GlassPanel className="dialog">
-        <h2>{t("settings.title")}</h2>
-        <div className="settings-list">
-          <div>
-            <span>{t("settings.language")}</span>
-            <select value={language} onChange={(e) => void changeLanguage(e.target.value)}>
-              <option value="en">{t("lang.en")}</option>
-              <option value="zh">{t("lang.zh")}</option>
-            </select>
+      <div className="dialog-stack dialog-stack--narrow">
+        <GlassPanel className="dialog">
+          <h2>{t("settings.title")}</h2>
+          <div className="settings-list">
+            <label className="settings-field">
+              <span>{t("settings.language")}</span>
+              <select value={language} onChange={(e) => void changeLanguage(e.target.value)}>
+                <option value="en">{t("lang.en")}</option>
+                <option value="zh">{t("lang.zh")}</option>
+              </select>
+            </label>
+            {runtime ? (
+              <>
+                <div className="settings-field">
+                  <span>{t("settings.storageLocation")}</span>
+                  <p className="settings-value">{runtime.dataRoot}</p>
+                </div>
+                <div className="settings-field">
+                  <span>{t("settings.gitSource")}</span>
+                  <p className="settings-value">
+                    {runtime.gitSource === "system" ? t("settings.gitSystem") : t("settings.gitBundled")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="dialog-details-toggle settings-advanced-toggle"
+                  onClick={() => setShowAdvanced((v) => !v)}
+                >
+                  {showAdvanced ? t("settings.hideAdvanced") : t("settings.showAdvanced")}
+                </button>
+                {showAdvanced ? (
+                  <div className="settings-advanced">
+                    <div className="settings-field">
+                      <span>{t("settings.docugitPath")}</span>
+                      <p className="settings-value settings-value--mono">{runtime.docugitPath}</p>
+                    </div>
+                    <div className="settings-field">
+                      <span>{t("settings.gitPath")}</span>
+                      <p className="settings-value settings-value--mono">{runtime.gitPath}</p>
+                    </div>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
           </div>
-          {runtime ? (
-            <>
-              <div>
-                <span>{t("settings.docugitPath")}</span>
-                <code>{runtime.docugitPath}</code>
-              </div>
-              <div>
-                <span>{t("settings.gitPath")}</span>
-                <code>
-                  {runtime.gitPath} ({runtime.gitSource})
-                </code>
-              </div>
-              <div>
-                <span>{t("settings.dataRoot")}</span>
-                <code>{runtime.dataRoot}</code>
-              </div>
-            </>
-          ) : null}
-        </div>
+        </GlassPanel>
         <div className="dialog-actions">
-          <button onClick={onClose}>{t("settings.close")}</button>
+          <GlassButton onClick={onClose}>{t("settings.close")}</GlassButton>
         </div>
-      </GlassPanel>
+      </div>
     </div>
   );
 }

@@ -8,8 +8,16 @@ export interface SemanticChange {
   type: "added" | "removed" | "modified";
 }
 
+export interface DiffCommitRef {
+  hash: string;
+  shortHash: string;
+}
+
 export interface SemanticDiffResult {
   documentType: DocumentType;
+  base?: DiffCommitRef;
+  head?: DiffCommitRef;
+  compareWorktree?: boolean;
   changes: SemanticChange[];
   summary: {
     added: number;
@@ -26,6 +34,8 @@ export interface GitStatusFile {
 
 export interface GitStatusJson {
   branch: string;
+  headHash: string;
+  headShortHash: string;
   upstream: string | null;
   ahead: number;
   behind: number;
@@ -51,6 +61,7 @@ export interface LogEntryJson {
   email: string;
   date: string;
   subject: string;
+  refs: string[];
 }
 
 export interface MergeResultJson {
@@ -59,7 +70,7 @@ export interface MergeResultJson {
   conflicts?: SemanticDiffResult;
 }
 
-export type WorkspaceSource = "new" | "init" | "clone" | "import";
+export type WorkspaceSource = "new" | "init" | "clone" | "import" | "discovered";
 
 export interface WorkspaceEntry {
   id: string;
@@ -68,6 +79,7 @@ export interface WorkspaceEntry {
   documentType: DocumentType;
   remoteUrl?: string;
   createdAt: string;
+  lastOpenedAt?: string;
   source: WorkspaceSource;
 }
 
@@ -107,16 +119,25 @@ export interface ImportRepoParams {
   name?: string;
 }
 
+export interface PickSaveFileOptions {
+  defaultPath?: string;
+  extension?: DocumentType;
+}
+
 export interface DocuGitDesktopApi {
+  readonly platform: NodeJS.Platform;
   listWorkspaces(): Promise<WorkspaceEntry[]>;
   createNew(params: NewRepoParams): Promise<WorkspaceEntry>;
   createInit(params: InitRepoParams): Promise<WorkspaceEntry>;
   cloneRepo(params: CloneRepoParams): Promise<WorkspaceEntry>;
   importRepo(params: ImportRepoParams): Promise<WorkspaceEntry>;
   removeWorkspace(id: string): Promise<void>;
+  touchWorkspace(id: string): Promise<void>;
+  flushActiveWorkspace(id: string): void;
   runDocugit(workspaceId: string, args: string[]): Promise<CommandResult>;
   runGit(workspaceId: string, args: string[]): Promise<CommandResult>;
   pickFile(filters?: { name: string; extensions: string[] }[]): Promise<string | null>;
+  pickSaveFile(options?: PickSaveFileOptions): Promise<string | null>;
   pickDirectory(): Promise<string | null>;
   getRuntimeInfo(): Promise<RuntimeInfo>;
   getSetting(key: string): Promise<string | null>;

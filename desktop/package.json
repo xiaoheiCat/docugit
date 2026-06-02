@@ -9,11 +9,11 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "pack": "electron-builder --config electron-builder.yml",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "postinstall": "node ./node_modules/electron/install.js"
   },
   "dependencies": {
     "i18next": "^25.2.1",
-    "liquid-glass-react": "^1.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-i18next": "^15.5.2"

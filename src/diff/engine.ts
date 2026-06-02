@@ -21,8 +21,16 @@ export interface SemanticChange {
   type: "added" | "removed" | "modified";
 }
 
+export interface DiffCommitRef {
+  hash: string;
+  shortHash: string;
+}
+
 export interface SemanticDiffResult {
   documentType: DocumentType;
+  base?: DiffCommitRef;
+  head?: DiffCommitRef;
+  compareWorktree?: boolean;
   changes: SemanticChange[];
   summary: {
     added: number;

@@ -1,4 +1,5 @@
 import type { SemanticDiffResult } from "./engine.ts";
+import { formatDiffCompareLabel } from "../utils/diff-refs.ts";
 
 const colors = {
   reset: "\x1b[0m",
@@ -11,7 +12,7 @@ const colors = {
 
 export function formatTerminalDiff(result: SemanticDiffResult): string {
   const lines: string[] = [];
-  lines.push(`${colors.cyan}DocuGit Semantic Diff (${result.documentType})${colors.reset}`);
+  lines.push(`${colors.cyan}DocuGit Semantic Diff (${formatDiffCompareLabel(result)})${colors.reset}`);
   lines.push(
     `${colors.dim}Summary: +${result.summary.added} -${result.summary.removed} ~${result.summary.modified}${colors.reset}`,
   );

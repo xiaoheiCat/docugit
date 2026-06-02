@@ -3,6 +3,7 @@ dist/
 .DS_Store
 *.tmp
 .docugit/
+assets/icon.ico
 desktop/out/
 desktop/release/
 desktop/node_modules/

@@ -1,18 +1,30 @@
 import { useTranslation } from "react-i18next";
 import type { SemanticDiffResult } from "../../shared/types.ts";
+import { DiffCompareLine } from "./DiffCompareLine.tsx";
 
 interface DiffReportProps {
   result: SemanticDiffResult;
   title?: string;
+  onSelectCommit?: (hash: string) => void;
+  onResetCompare?: () => void;
 }
 
-export function DiffReport({ result, title }: DiffReportProps): React.JSX.Element {
+export function DiffReport({
+  result,
+  title,
+  onSelectCommit,
+  onResetCompare,
+}: DiffReportProps): React.JSX.Element {
   const { t } = useTranslation();
 
   return (
     <div>
       <h2>{title ?? t("diff.title")}</h2>
-      <p style={{ color: "var(--muted)" }}>{result.documentType}</p>
+      <DiffCompareLine
+        result={result}
+        onSelectCommit={onSelectCommit}
+        onResetCompare={onResetCompare}
+      />
       <div className="diff-summary">
         <div className="stat-card added">
           <strong>{result.summary.added}</strong>

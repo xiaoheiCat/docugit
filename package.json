@@ -11,6 +11,8 @@
     "build": "bun run embed-templates && bun build src/cli/index.ts --compile --outfile dist/docugit",
     "sync-templates": "bun run scripts/sync-templates.ts",
     "embed-templates": "bun run scripts/embed-templates.ts",
+    "prepare-windows-icon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/prepare-windows-icon.ps1",
+    "build:windows": "bun run prepare-windows-icon && bun run embed-templates && bun build src/cli/index.ts --compile --target=bun-windows-x64 --windows-icon=assets/icon.ico --outfile dist/docugit.exe",
     "typecheck": "tsc --noEmit",
     "desktop:dev": "cd desktop && bun install && bun run dev",
     "desktop:build": "cd desktop && bun install && bun run build",

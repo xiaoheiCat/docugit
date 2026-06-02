@@ -10,6 +10,8 @@ export interface GitStatusFile {
 
 export interface GitStatusJson {
   branch: string;
+  headHash: string;
+  headShortHash: string;
   upstream: string | null;
   ahead: number;
   behind: number;
@@ -35,6 +37,7 @@ export interface LogEntryJson {
   email: string;
   date: string;
   subject: string;
+  refs: string[];
 }
 
 export interface MergeResultJson {

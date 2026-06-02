@@ -2,6 +2,8 @@
 
 English | [简体中文](README.zh.md)
 
+![Docugit](assets/banner.png)
+
 Git-based version control CLI for Office OpenXML documents.
 
 DocuGit unpacks `.docx`, `.xlsx`, and `.pptx` files into a Git repository and adds **human-readable semantic diff, three-way merge, and Office edit round-tripping** on top of Git.

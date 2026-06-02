@@ -4,7 +4,7 @@ import { gitOutput } from "./git.ts";
 const FIELD_SEP = "\x1f";
 
 export function formatLogJson(repoRoot: string, limit = 50): LogEntryJson[] {
-  const format = ["%H", "%h", "%an", "%ae", "%aI", "%s"].join(FIELD_SEP);
+  const format = ["%H", "%h", "%an", "%ae", "%aI", "%s", "%D"].join(FIELD_SEP);
   let raw = "";
   try {
     raw = gitOutput(["log", `--format=${format}`, `-n`, String(limit)], repoRoot);
@@ -15,8 +15,12 @@ export function formatLogJson(repoRoot: string, limit = 50): LogEntryJson[] {
   if (!raw.trim()) return [];
 
   return raw.split("\n").filter(Boolean).map((line) => {
-    const [hash = "", shortHash = "", author = "", email = "", date = "", subject = ""] =
+    const [hash = "", shortHash = "", author = "", email = "", date = "", subject = "", decoration = ""] =
       line.split(FIELD_SEP);
-    return { hash, shortHash, author, email, date, subject };
+    const refs = decoration
+      .split(",")
+      .map((ref) => ref.trim())
+      .filter(Boolean);
+    return { hash, shortHash, author, email, date, subject, refs };
   });
 }

@@ -7,6 +7,7 @@ import { formatHtmlDiff } from "../../diff/html.ts";
 import { formatJsonDiff } from "../../diff/json.ts";
 import type { StatusJson } from "../../diff/json-schemas.ts";
 import { formatTerminalDiff } from "../../diff/terminal.ts";
+import { attachDiffRefs, resolveCommitRef } from "../../utils/diff-refs.ts";
 import { gitOutput, passthroughToGit } from "../../utils/git.ts";
 import { formatLogJson } from "../../utils/log-json.ts";
 import { getOpenSessionFilePath, openSessionFileExists } from "../../utils/open-session.ts";
@@ -40,18 +41,27 @@ export async function runDiff(options: DiffOptions = {}): Promise<number> {
   const config = await readConfig(repoRoot);
 
   let repoA: string;
-  let repoB = repoRoot;
+  let repoB: string;
+  let diffBase = resolveCommitRef(repoRoot, "HEAD");
+  let diffHead: ReturnType<typeof resolveCommitRef> | "worktree" = "worktree";
 
   if (options.ref) {
+    diffBase = resolveCommitRef(repoRoot, options.ref);
+    diffHead = resolveCommitRef(repoRoot, "HEAD");
     repoA = await checkoutRefToTemp(repoRoot, options.ref);
+    repoB = await checkoutRefToTemp(repoRoot, "HEAD");
   } else {
     repoA = await checkoutRefToTemp(repoRoot, "HEAD");
-    // Compare staged + unstaged against HEAD
+    repoB = repoRoot;
     try {
       const staged = gitOutput(["diff", "--cached", "--name-only"], repoRoot);
       const unstaged = gitOutput(["diff", "--name-only"], repoRoot);
       if (!staged && !unstaged) {
-        const result = await computeSemanticDiff(repoA, repoB, config.document.type);
+        const result = attachDiffRefs(
+          await computeSemanticDiff(repoA, repoB, config.document.type),
+          diffBase,
+          diffHead,
+        );
         if (options.json) {
           console.log(formatJsonDiff(result));
         } else if (options.html) {
@@ -66,7 +76,11 @@ export async function runDiff(options: DiffOptions = {}): Promise<number> {
     }
   }
 
-  const result = await computeSemanticDiff(repoA, repoB, config.document.type);
+  const result = attachDiffRefs(
+    await computeSemanticDiff(repoA, repoB, config.document.type),
+    diffBase,
+    diffHead,
+  );
 
   if (options.json) {
     console.log(formatJsonDiff(result));
@@ -91,7 +105,11 @@ export async function runStatus(options: StatusOptions = {}): Promise<number> {
   try {
     const config = await readConfig(repoRoot);
     const headDir = await checkoutRefToTemp(repoRoot, "HEAD");
-    semantic = await computeSemanticDiff(headDir, repoRoot, config.document.type);
+    semantic = attachDiffRefs(
+      await computeSemanticDiff(headDir, repoRoot, config.document.type),
+      resolveCommitRef(repoRoot, "HEAD"),
+      "worktree",
+    );
   } catch {
     semantic = null;
   }

@@ -1,14 +1,19 @@
 import { cp, stat } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { DocumentType } from "../config/docugit-yml.ts";
 import { EMBEDDED_TEMPLATE_ZIPS } from "../generated/embedded-templates.ts";
 import { unpackFromBuffer } from "../ooxml/pack.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const TEMPLATE_TYPES: DocumentType[] = ["docx", "xlsx", "pptx"];
 
 function isCompiledBinary(): boolean {
-  return import.meta.url.includes("/$bunfs/");
+  if (import.meta.url.includes("/$bunfs/")) {
+    return true;
+  }
+  const execName = basename(process.execPath);
+  return execName === "docugit" || execName === "docugit.exe";
 }
 
 async function pathExists(path: string): Promise<boolean> {
@@ -20,6 +25,15 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
+async function hasFullTemplateSet(dir: string): Promise<boolean> {
+  for (const type of TEMPLATE_TYPES) {
+    if (!(await pathExists(join(dir, type)))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 async function resolveTemplatesDir(): Promise<string | null> {
   const candidates = [
     join(__dirname, "../../templates"),
@@ -28,7 +42,7 @@ async function resolveTemplatesDir(): Promise<string | null> {
   ];
 
   for (const candidate of candidates) {
-    if (await pathExists(join(candidate, "docx"))) {
+    if (await hasFullTemplateSet(candidate)) {
       return candidate;
     }
   }

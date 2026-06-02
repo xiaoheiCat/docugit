@@ -2,6 +2,8 @@
 
 [English](README.md) | 简体中文
 
+![Docugit](assets/banner.png)
+
 基于 Office OpenXML 的 Git 文档版本控制 CLI。
 
 DocuGit 将 `.docx` / `.xlsx` / `.pptx` 解包为 Git 仓库内容，在 Git 之上提供**人类可读的语义 diff、三路 merge、Office 编辑回写**等能力。

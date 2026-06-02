@@ -1,5 +1,6 @@
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { readFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import type {
@@ -16,6 +17,15 @@ import { getDataRoot } from "./git-resolver.ts";
 import { runDocugit, runGit } from "./cli-spawner.ts";
 
 const REGISTRY_FILE = "registry.json";
+const SESSION_ACTIVE_WORKSPACE_KEY = "session.activeWorkspaceId";
+
+function workspaceRecency(entry: WorkspaceEntry): number {
+  return new Date(entry.lastOpenedAt ?? entry.createdAt).getTime();
+}
+
+function sortWorkspaces(workspaces: WorkspaceEntry[]): WorkspaceEntry[] {
+  return [...workspaces].sort((a, b) => workspaceRecency(b) - workspaceRecency(a));
+}
 
 function registryPath(): string {
   return join(getDataRoot(), REGISTRY_FILE);
@@ -33,15 +43,46 @@ async function loadRegistry(): Promise<WorkspaceRegistry> {
   await ensureDataRoot();
   try {
     const raw = await readFile(registryPath(), "utf-8");
-    return JSON.parse(raw) as WorkspaceRegistry;
+    return normalizeRegistry(JSON.parse(raw) as WorkspaceRegistry);
   } catch {
     return { workspaces: [] };
   }
 }
 
+function loadRegistrySync(): WorkspaceRegistry {
+  try {
+    const raw = readFileSync(registryPath(), "utf-8");
+    return normalizeRegistry(JSON.parse(raw) as WorkspaceRegistry);
+  } catch {
+    return { workspaces: [] };
+  }
+}
+
+function normalizeRegistry(registry: WorkspaceRegistry): WorkspaceRegistry {
+  return {
+    workspaces: registry.workspaces.map((entry) => ({
+      ...entry,
+      lastOpenedAt: entry.lastOpenedAt ?? entry.createdAt,
+    })),
+  };
+}
+
 async function saveRegistry(registry: WorkspaceRegistry): Promise<void> {
   await ensureDataRoot();
   await writeFile(registryPath(), JSON.stringify(registry, null, 2), "utf-8");
+}
+
+function saveRegistrySync(registry: WorkspaceRegistry): void {
+  writeFileSync(registryPath(), JSON.stringify(registry, null, 2), "utf-8");
+}
+
+function stampWorkspace(registry: WorkspaceRegistry, id: string): boolean {
+  const entry = registry.workspaces.find((w) => w.id === id);
+  if (!entry) {
+    return false;
+  }
+  entry.lastOpenedAt = new Date().toISOString();
+  return true;
 }
 
 function sanitizeName(name: string): string {
@@ -62,17 +103,25 @@ async function registerWorkspace(
   source: WorkspaceSource,
   documentType?: DocumentType,
   remoteUrl?: string,
+  workspaceId?: string,
 ): Promise<WorkspaceEntry> {
   const registry = await loadRegistry();
-  const id = randomUUID();
+  const existing = registry.workspaces.find((w) => w.path === repoPath);
+  if (existing) {
+    return existing;
+  }
+
+  const id = workspaceId ?? randomUUID();
   const type = documentType ?? (await detectDocumentType(repoPath));
+  const now = new Date().toISOString();
   const entry: WorkspaceEntry = {
     id,
     name,
     path: repoPath,
     documentType: type,
     remoteUrl,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    lastOpenedAt: now,
     source,
   };
   registry.workspaces.push(entry);
@@ -84,10 +133,80 @@ function resolveRepoPath(id: string, repoName: string): string {
   return join(workspacesRoot(), id, sanitizeName(repoName));
 }
 
-export async function listWorkspaces(): Promise<WorkspaceEntry[]> {
-  const registry = await loadRegistry();
-  return registry.workspaces;
+async function isDocuGitRepo(path: string): Promise<boolean> {
+  return existsSync(join(path, ".docugit.yml"));
 }
+
+async function syncRegistryWithDisk(registry: WorkspaceRegistry): Promise<WorkspaceRegistry> {
+  const knownPaths = new Set(registry.workspaces.map((w) => w.path));
+  let changed = false;
+
+  try {
+    const bucketDirs = await readdir(workspacesRoot(), { withFileTypes: true });
+    for (const bucket of bucketDirs) {
+      if (!bucket.isDirectory()) continue;
+      const bucketPath = join(workspacesRoot(), bucket.name);
+      const repoDirs = await readdir(bucketPath, { withFileTypes: true });
+      for (const repo of repoDirs) {
+        if (!repo.isDirectory()) continue;
+        const repoPath = join(bucketPath, repo.name);
+        if (knownPaths.has(repoPath)) continue;
+        if (!(await isDocuGitRepo(repoPath))) continue;
+
+        const type = await detectDocumentType(repoPath);
+        const now = new Date().toISOString();
+        registry.workspaces.push({
+          id: bucket.name,
+          name: repo.name,
+          path: repoPath,
+          documentType: type,
+          createdAt: now,
+          lastOpenedAt: now,
+          source: "discovered",
+        });
+        knownPaths.add(repoPath);
+        changed = true;
+      }
+    }
+  } catch {
+    // workspaces root may not exist yet
+  }
+
+  const before = registry.workspaces.length;
+  registry.workspaces = registry.workspaces.filter((w) => existsSync(w.path));
+  if (registry.workspaces.length !== before) {
+    changed = true;
+  }
+
+  if (changed) {
+    await saveRegistry(registry);
+  }
+
+  return registry;
+}
+
+export async function listWorkspaces(): Promise<WorkspaceEntry[]> {
+  const registry = await syncRegistryWithDisk(await loadRegistry());
+  return sortWorkspaces(registry.workspaces);
+}
+
+export async function touchWorkspace(id: string): Promise<void> {
+  const registry = await loadRegistry();
+  if (!stampWorkspace(registry, id)) {
+    return;
+  }
+  await saveRegistry(registry);
+}
+
+export function touchWorkspaceSync(id: string): void {
+  const registry = loadRegistrySync();
+  if (!stampWorkspace(registry, id)) {
+    return;
+  }
+  saveRegistrySync(registry);
+}
+
+export { SESSION_ACTIVE_WORKSPACE_KEY };
 
 export async function getWorkspace(id: string): Promise<WorkspaceEntry> {
   const registry = await loadRegistry();
@@ -100,8 +219,29 @@ export async function getWorkspace(id: string): Promise<WorkspaceEntry> {
 
 export async function removeWorkspace(id: string): Promise<void> {
   const registry = await loadRegistry();
+  const entry = registry.workspaces.find((w) => w.id === id);
+  if (!entry) {
+    throw new Error(`fatal: workspace '${id}' not found`);
+  }
+
   registry.workspaces = registry.workspaces.filter((w) => w.id !== id);
   await saveRegistry(registry);
+
+  if (existsSync(entry.path)) {
+    await rm(entry.path, { recursive: true, force: true });
+  }
+
+  const bucketPath = dirname(entry.path);
+  if (bucketPath.startsWith(workspacesRoot()) && existsSync(bucketPath)) {
+    try {
+      const remaining = await readdir(bucketPath);
+      if (remaining.length === 0) {
+        await rm(bucketPath, { recursive: true, force: true });
+      }
+    } catch {
+      // ignore cleanup errors
+    }
+  }
 }
 
 export async function createNew(params: NewRepoParams): Promise<WorkspaceEntry> {
@@ -115,7 +255,7 @@ export async function createNew(params: NewRepoParams): Promise<WorkspaceEntry> 
     throw new Error(result.stderr || result.stdout || "docugit new failed");
   }
 
-  return registerWorkspace(repoPath, repoName, "new", params.type);
+  return registerWorkspace(repoPath, repoName, "new", params.type, undefined, id);
 }
 
 export async function createInit(params: InitRepoParams): Promise<WorkspaceEntry> {
@@ -130,7 +270,7 @@ export async function createInit(params: InitRepoParams): Promise<WorkspaceEntry
     throw new Error(result.stderr || result.stdout || "docugit init failed");
   }
 
-  return registerWorkspace(repoPath, repoName, "init");
+  return registerWorkspace(repoPath, repoName, "init", undefined, undefined, id);
 }
 
 export async function cloneRepo(params: CloneRepoParams): Promise<WorkspaceEntry> {
@@ -146,11 +286,7 @@ export async function cloneRepo(params: CloneRepoParams): Promise<WorkspaceEntry
     throw new Error(result.stderr || result.stdout || "git clone failed");
   }
 
-  return registerWorkspace(repoPath, repoName, "clone", undefined, params.url);
-}
-
-async function isDocuGitRepo(path: string): Promise<boolean> {
-  return existsSync(join(path, ".docugit.yml"));
+  return registerWorkspace(repoPath, repoName, "clone", undefined, params.url, id);
 }
 
 export async function importRepo(params: ImportRepoParams): Promise<WorkspaceEntry> {
@@ -166,5 +302,5 @@ export async function importRepo(params: ImportRepoParams): Promise<WorkspaceEnt
 
   await cp(params.sourcePath, repoPath, { recursive: true, force: true });
 
-  return registerWorkspace(repoPath, repoName, "import");
+  return registerWorkspace(repoPath, repoName, "import", undefined, undefined, id);
 }

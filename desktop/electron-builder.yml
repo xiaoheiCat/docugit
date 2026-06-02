@@ -1,5 +1,6 @@
 appId: com.docugit.desktop
 productName: DocuGit Desktop
+icon: ../assets/icon.png
 directories:
   output: release
   buildResources: resources
@@ -11,6 +12,8 @@ extraResources:
     to: bin/
     filter:
       - "**/*"
+  - from: ../assets/icon.png
+    to: icon.png
 mac:
   category: public.app-category.productivity
   target:
@@ -22,6 +25,7 @@ win:
   target:
     - nsis
   artifactName: docugit-desktop-${version}-${arch}.${ext}
+  icon: ../assets/icon.png
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
