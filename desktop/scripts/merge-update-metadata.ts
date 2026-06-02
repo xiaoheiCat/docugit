@@ -61,18 +61,16 @@ function sortFileEntries(files: UpdateFileEntry[]): UpdateFileEntry[] {
   });
 }
 
-
 function mergeUpdateMetadata(
   dir: string,
   outputName: string,
   sourceMatcher: (name: string) => boolean,
 ): void {
+  const output = join(dir, outputName);
   const sources = findFiles(dir, sourceMatcher);
   if (sources.length === 0) {
     return;
   }
-
-  const output = join(dir, outputName);
 
   if (sources.length === 1) {
     const doc = readFileSync(sources[0]!, "utf-8");
@@ -113,19 +111,27 @@ function mergeUpdateMetadata(
   }
 }
 
+function mergeMacMetadata(dir: string): void {
+  mergeUpdateMetadata(
+    dir,
+    "latest-mac.yml",
+    (name) => name === "latest-mac.yml" || /^latest-mac-\d+\.yml$/.test(name),
+  );
+}
+
+function mergeWinMetadata(dir: string): void {
+  mergeUpdateMetadata(
+    dir,
+    "latest.yml",
+    (name) => name === "latest.yml" || /^latest-win-\d+\.yml$/.test(name),
+  );
+}
+
 const targetDir = process.argv[2];
 if (!targetDir) {
   console.error("usage: merge-update-metadata.ts <release-desktop-dir>");
   process.exit(1);
 }
 
-mergeUpdateMetadata(
-  targetDir,
-  "latest-mac.yml",
-  (name) => name === "latest-mac.yml" || /^latest-mac-\d+\.yml$/.test(name),
-);
-mergeUpdateMetadata(
-  targetDir,
-  "latest.yml",
-  (name) => name === "latest.yml" || /^latest-win-\d+\.yml$/.test(name),
-);
+mergeMacMetadata(targetDir);
+mergeWinMetadata(targetDir);
