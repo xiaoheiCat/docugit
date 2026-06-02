@@ -10,6 +10,16 @@ if (-not (Test-Path $PngPath)) {
 }
 
 Add-Type -AssemblyName System.Drawing
+if (-not ('WinIcon' -as [type])) {
+    Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class WinIcon {
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool DestroyIcon(IntPtr hIcon);
+}
+"@
+}
 
 $source = [System.Drawing.Bitmap]::FromFile($PngPath)
 try {
@@ -27,14 +37,19 @@ try {
         $iconHandle = $resized.GetHicon()
         try {
             $icon = [System.Drawing.Icon]::FromHandle($iconHandle)
-            $stream = [System.IO.File]::Open($IcoPath, [System.IO.FileMode]::Create)
+            $fileIcon = [System.Drawing.Icon]::new($icon, $size, $size)
             try {
-                $icon.Save($stream)
+                $stream = [System.IO.File]::Open($IcoPath, [System.IO.FileMode]::Create)
+                try {
+                    $fileIcon.Save($stream)
+                } finally {
+                    $stream.Close()
+                }
             } finally {
-                $stream.Close()
+                $fileIcon.Dispose()
             }
         } finally {
-            [void][System.Drawing.Icon]::DestroyIcon($iconHandle)
+            [void][WinIcon]::DestroyIcon($iconHandle)
         }
     } finally {
         $resized.Dispose()
