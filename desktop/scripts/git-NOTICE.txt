@@ -1,0 +1,7 @@
+DocuGit Desktop bundles a Git runtime for use when no system Git is available.
+
+This Git distribution is derived from Git for Windows / dugite (https://github.com/desktop/dugite)
+and is licensed under the GNU General Public License version 2. See the COPYING file in the
+bundled git directory, if present, or https://git-scm.com/.
+
+DocuGit Desktop prefers a system-installed Git when one is on PATH.

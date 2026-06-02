@@ -27,11 +27,23 @@ Managed repositories live in `~/.docugit-desktop/workspaces/<uuid>/<repo-name>/`
 
 Application icons use the shared source at [`../assets/icon.png`](../assets/icon.png). `electron-builder` generates platform `.icns` / `.ico` from that PNG at pack time.
 
+## Bundled Git
+
+Release installers include a pinned [dugite-native](https://github.com/desktop/dugite-native) Git tree under `resources/bin/git/` (via `extraResources`, manifest in [`scripts/embedded-git.json`](scripts/embedded-git.json)). At runtime, **system Git on `PATH` is preferred**; bundled Git is used only when no system Git is found. Settings → Git source shows which one is active.
+
+Bundled Git is GPLv2; see `resources/bin/git/NOTICE` after staging. Version pin: [`scripts/bundled-git-version.ts`](scripts/bundled-git-version.ts).
+
 ## Build installers
+
+From the repository root:
 
 ```bash
 bun run build
-cp dist/docugit desktop/resources/bin/docugit   # macOS/Linux
+cp dist/docugit desktop/resources/bin/docugit   # macOS/Linux dev pack
 # docugit.exe on Windows
-bun run desktop:pack
+cd desktop
+bun run stage-git -- --platform darwin --arch arm64   # or win32 / x64 / arm64
+bun run pack
 ```
+
+CI runs `stage-bundled-git.ts` per matrix row before `electron-builder`.

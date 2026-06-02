@@ -221,6 +221,17 @@ jobs:
           mkdir -p desktop/resources/bin
           cp "dist/${{ matrix.docugit_bin }}" "desktop/resources/bin/docugit${{ matrix.platform == 'windows' && '.exe' || '' }}"
 
+      - name: Stage bundled Git
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd desktop
+          platform="darwin"
+          if [ "${{ matrix.platform }}" = "windows" ]; then
+            platform="win32"
+          fi
+          bun run scripts/stage-bundled-git.ts --platform "$platform" --arch "${{ matrix.electron_arch }}"
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22

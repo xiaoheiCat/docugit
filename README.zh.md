@@ -72,7 +72,7 @@ bun run build   # 编译本地二进制到 dist/docugit
 ```
 ### DocuGit Desktop
 
-为 Windows 与 macOS 开发的 DocuGit 图形客户端。已安装版本会自动检查 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) 更新，并在新版本下载完成后提示重启。
+为 Windows 与 macOS 开发的 DocuGit 图形客户端。已安装版本会自动检查 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) 更新，并在新版本下载完成后提示重启。安装包内置与架构匹配的 Git 作为兜底（若系统 `PATH` 中已有 Git 则优先使用系统 Git）。独立 CLI 发行版仍需自行安装 Git。
 
 从 [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) 下载：
 

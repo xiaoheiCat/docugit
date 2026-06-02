@@ -13,12 +13,30 @@ function bundledBinDir(): string {
   return join(app.getAppPath(), "resources", "bin");
 }
 
-function bundledGitPath(): string | null {
-  const dir = bundledBinDir();
+export function bundledGitRoot(): string | null {
+  const root = join(bundledBinDir(), "git");
+  if (!existsSync(root)) {
+    return null;
+  }
   const candidates =
     process.platform === "win32"
-      ? [join(dir, "git.exe"), join(dir, "cmd", "git.exe")]
-      : [join(dir, "git")];
+      ? [join(root, "cmd", "git.exe"), join(root, "mingw64", "bin", "git.exe")]
+      : [join(root, "bin", "git")];
+  if (candidates.some((p) => existsSync(p))) {
+    return root;
+  }
+  return null;
+}
+
+function bundledGitPath(): string | null {
+  const root = bundledGitRoot();
+  if (!root) {
+    return null;
+  }
+  const candidates =
+    process.platform === "win32"
+      ? [join(root, "cmd", "git.exe"), join(root, "mingw64", "bin", "git.exe")]
+      : [join(root, "bin", "git")];
   return candidates.find((p) => existsSync(p)) ?? null;
 }
 

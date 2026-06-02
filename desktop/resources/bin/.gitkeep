@@ -1,2 +1,2 @@
-# Placeholder — CI copies compiled docugit binary here before packaging.
-# Dev: symlink or copy from ../dist/docugit
+# Placeholder — CI copies compiled docugit binary and staged git/ here before packaging.
+# Dev: symlink or copy from ../dist/docugit; optional: bun run stage-git -- --platform … --arch …

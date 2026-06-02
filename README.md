@@ -73,7 +73,7 @@ bun run build   # compile local binary to dist/docugit
 
 ### DocuGit Desktop
 
-DocuGit GUI client for Windows and macOS. Installed builds check [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) for updates automatically and prompt you to restart when a new version is ready.
+DocuGit GUI client for Windows and macOS. Installed builds check [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases) for updates automatically and prompt you to restart when a new version is ready. Each installer bundles a matching-architecture Git runtime as a fallback when no system Git is on `PATH` (system Git is preferred when present).
 
 Download from [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases):
 

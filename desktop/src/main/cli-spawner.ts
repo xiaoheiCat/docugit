@@ -1,24 +1,58 @@
 import { spawn } from "node:child_process";
+import { join } from "node:path";
 import type { CommandResult } from "../shared/types.ts";
-import { docugitSpawnArgs, getBinDir, resolveDocugit, resolveGit } from "./git-resolver.ts";
+import {
+  bundledGitRoot,
+  docugitSpawnArgs,
+  getBinDir,
+  resolveDocugit,
+  resolveGit,
+} from "./git-resolver.ts";
+
+function bundledGitPathEntries(gitRoot: string): string[] {
+  if (process.platform === "win32") {
+    return [join(gitRoot, "cmd"), join(gitRoot, "mingw64", "bin"), gitRoot];
+  }
+  return [join(gitRoot, "bin")];
+}
 
 function buildEnv(): NodeJS.ProcessEnv {
   const git = resolveGit();
   const binDir = getBinDir();
   const sep = process.platform === "win32" ? ";" : ":";
   const pathParts = [binDir];
-  if (git.path) {
+
+  if (git.source === "bundled") {
+    const gitRoot = bundledGitRoot();
+    if (gitRoot) {
+      pathParts.push(...bundledGitPathEntries(gitRoot));
+    }
+  } else if (git.path) {
     const gitDir = git.path.includes("/") || git.path.includes("\\")
       ? git.path.replace(/[/\\][^/\\]+$/, "")
       : "";
-    if (gitDir) pathParts.push(gitDir);
+    if (gitDir) {
+      pathParts.push(gitDir);
+    }
   }
-  return {
+
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     PATH: `${pathParts.join(sep)}${sep}${process.env.PATH ?? ""}`,
     DOCUGIT_NO_OPEN: "1",
     GIT_TERMINAL_PROMPT: "0",
   };
+
+  if (git.source === "bundled") {
+    const gitRoot = bundledGitRoot();
+    if (gitRoot) {
+      if (process.platform === "darwin") {
+        env.GIT_EXEC_PATH = join(gitRoot, "libexec", "git-core");
+      }
+    }
+  }
+
+  return env;
 }
 
 export async function spawnCommand(
