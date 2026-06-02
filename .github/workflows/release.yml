@@ -157,20 +157,21 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            docugit_artifact: docugit-darwin-arm64
+            platform: darwin
             docugit_bin: docugit-darwin-arm64
             electron_arch: arm64
-            ext: dmg
           - os: macos-15-intel
-            docugit_artifact: docugit-darwin-amd64
+            platform: darwin
             docugit_bin: docugit-darwin-amd64
             electron_arch: x64
-            ext: dmg
           - os: windows-latest
-            docugit_artifact: docugit-windows-amd64
+            platform: windows
             docugit_bin: docugit-windows-amd64.exe
             electron_arch: x64
-            ext: exe
+          - os: windows-11-arm
+            platform: windows
+            docugit_bin: docugit-windows-arm64.exe
+            electron_arch: arm64
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -184,7 +185,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Prepare Windows executable icon
-        if: matrix.os == 'windows-latest'
+        if: matrix.platform == 'windows'
         shell: pwsh
         run: ./scripts/prepare-windows-icon.ps1
 
@@ -198,9 +199,10 @@ jobs:
             macos-latest) target=bun-darwin-arm64 ;;
             macos-15-intel) target=bun-darwin-x64 ;;
             windows-latest) target=bun-windows-x64 ;;
+            windows-11-arm) target=bun-windows-arm64 ;;
           esac
           bun run embed-templates
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+          if [ "${{ matrix.platform }}" = "windows" ]; then
             bun build src/cli/index.ts --compile \
               --target=$target \
               --define "process.env.DOCUGIT_VERSION=\"${DOCUGIT_VERSION}\"" \
@@ -217,7 +219,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p desktop/resources/bin
-          cp "dist/${{ matrix.docugit_bin }}" "desktop/resources/bin/docugit${{ matrix.os == 'windows-latest' && '.exe' || '' }}"
+          cp "dist/${{ matrix.docugit_bin }}" "desktop/resources/bin/docugit${{ matrix.platform == 'windows' && '.exe' || '' }}"
 
       - uses: actions/setup-node@v4
         with:
@@ -243,8 +245,8 @@ jobs:
             fi
           }
           DESKTOP_SEMVER="$(normalize_desktop_version "${DOCUGIT_DESKTOP_VERSION}")"
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            npx electron-builder --config electron-builder.yml --win --x64 --publish never \
+          if [ "${{ matrix.platform }}" = "windows" ]; then
+            npx electron-builder --config electron-builder.yml --win --${{ matrix.electron_arch }} --publish never \
               -c.extraMetadata.version="${DESKTOP_SEMVER}"
           else
             npx electron-builder --config electron-builder.yml --mac --${{ matrix.electron_arch }} --publish never \
@@ -256,14 +258,14 @@ jobs:
         run: |
           mkdir -p desktop/release/upload
           find desktop/release -maxdepth 1 -type f \( \
-            -name '*.dmg' -o -name '*.exe' -o -name '*.zip' -o -name '*.blockmap' -o -name 'latest*.yml' \
+            -name '*.dmg' -o -name '*.exe' -o -name '*.blockmap' -o -name 'latest*.yml' \
           \) -exec cp {} desktop/release/upload/ \;
           ls -la desktop/release/upload/
 
       - name: Upload desktop artifact
         uses: actions/upload-artifact@v4
         with:
-          name: docugit-desktop-${{ matrix.electron_arch }}
+          name: docugit-desktop-${{ matrix.platform }}-${{ matrix.electron_arch }}
           path: desktop/release/upload/*
 
   package:
@@ -307,7 +309,7 @@ jobs:
           find dist/bin -mindepth 2 -type f -exec cp {} release/bin/ \;
           find release/bin -type f ! -name '*.exe' -exec chmod +x {} +
           find dist/msi -name '*.msi' -exec cp {} release/install/ \; 2>/dev/null || true
-          find dist/desktop -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.zip' -o -name '*.blockmap' \) -exec cp {} release/desktop/ \; 2>/dev/null || true
+          find dist/desktop -type f \( -name '*.dmg' -o -name '*.exe' -o -name '*.blockmap' \) -exec cp {} release/desktop/ \; 2>/dev/null || true
           idx=0
           while IFS= read -r f; do
             cp "$f" "release/desktop/latest-mac-${idx}.yml"
@@ -386,7 +388,6 @@ jobs:
             release/install/*
             release/desktop/*.dmg
             release/desktop/*.exe
-            release/desktop/*.zip
             release/desktop/*.blockmap
             release/desktop/latest*.yml
         env:

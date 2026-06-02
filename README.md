@@ -79,9 +79,10 @@ Download from [GitHub Releases](https://github.com/xiaoheiCat/docugit/releases):
 
 | Platform | File |
 |----------|------|
-| macOS (Apple Silicon) | `docugit-desktop-<version>-arm64.dmg` |
-| macOS (Intel) | `docugit-desktop-<version>-x64.dmg` |
-| Windows amd64 | `docugit-desktop-<version>-x64.exe` |
+| macOS (Apple Silicon) | `docugit-desktop-darwin-<version>-arm64.dmg` |
+| macOS (Intel) | `docugit-desktop-darwin-<version>-x64.dmg` |
+| Windows amd64 | `docugit-desktop-windows-<version>-x64.exe` |
+| Windows arm64 | `docugit-desktop-windows-<version>-arm64.exe` |
 
 ## Quick start
 
