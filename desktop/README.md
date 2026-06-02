@@ -52,4 +52,4 @@ CI runs `stage-bundled-git.ts` per matrix row before `electron-builder`.
 
 ### macOS code signing (auto-update)
 
-Squirrel.Mac requires the running app and the update zip to share a valid code signature. `scripts/after-sign-mac.ts` signs bundled `docugit` and dugite Git under `Contents/Resources/bin`. Without repo secrets `CSC_LINK` / `CSC_KEY_PASSWORD`, CI uses ad-hoc signing (`-`) so auto-update works between releases; add Apple Developer ID secrets for notarized distribution.
+Squirrel.Mac requires the running app and the update zip to share a valid code signature. `scripts/after-sign-mac.ts` signs bundled `docugit` and dugite Git under `Contents/Resources/bin`. Without **both** repo secrets `CSC_LINK` (base64 `.p12` or HTTPS URL, not a folder path) and `CSC_KEY_PASSWORD`, CI uses ad-hoc signing (`-`) so auto-update works between releases. Setting only `CSC_LINK` causes electron-builder to mis-read the value as a file path and fail. Add both secrets for notarized distribution.

@@ -17,14 +17,12 @@ interface AfterSignContext {
 }
 
 function resolveSignIdentity(): string | null {
-  if (process.env.CSC_IDENTITY_AUTO_DISCOVERY === "false" && !process.env.CSC_LINK) {
+  const hasCert = Boolean(process.env.CSC_LINK?.trim());
+  const hasPassword = Boolean(process.env.CSC_KEY_PASSWORD?.trim());
+  if (!hasCert || !hasPassword) {
     return "-";
   }
-  const fromEnv = process.env.CSC_NAME ?? process.env.CSC_IDENTITY;
-  if (fromEnv) {
-    return fromEnv;
-  }
-  return "-";
+  return process.env.CSC_NAME ?? process.env.CSC_IDENTITY ?? null;
 }
 
 function isMachO(filePath: string): boolean {
