@@ -286,12 +286,13 @@ jobs:
           path: dist/msi
           merge-multiple: true
 
+      # Keep each desktop artifact in its own subdir so latest.yml / latest-mac.yml
+      # from x64 and arm64 builds are not overwritten before metadata merge.
       - name: Download desktop artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: docugit-desktop-*
           path: dist/desktop
-          merge-multiple: true
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -321,6 +322,22 @@ jobs:
             idx=$((idx + 1))
           done < <(find dist/desktop -name 'latest.yml' | sort)
           (cd desktop && bun run scripts/merge-update-metadata.ts ../release/desktop)
+          for meta in latest.yml latest-mac.yml; do
+            if [ ! -f "release/desktop/$meta" ]; then
+              echo "error: missing release/desktop/$meta after metadata merge" >&2
+              exit 1
+            fi
+          done
+          if ! grep -qE '\-x64\.exe' release/desktop/latest.yml \
+            || ! grep -qE '\-arm64\.exe' release/desktop/latest.yml; then
+            echo "error: latest.yml must include both Windows x64 and arm64 installers" >&2
+            cat release/desktop/latest.yml >&2
+            exit 1
+          fi
+          if grep -qE '^path:' release/desktop/latest.yml; then
+            echo "error: latest.yml must not set top-level path (electron-updater would ignore arch)" >&2
+            exit 1
+          fi
           ls -la release/bin/
           ls -la release/install/ || true
           ls -la release/desktop/ || true

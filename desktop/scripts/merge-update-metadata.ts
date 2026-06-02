@@ -61,6 +61,15 @@ function sortFileEntries(files: UpdateFileEntry[]): UpdateFileEntry[] {
   });
 }
 
+/** electron-updater on Windows uses `files[]`; top-level `path` forces one arch for all. */
+function normalizeMetadata(doc: UpdateMetadata): UpdateMetadata {
+  return {
+    version: doc.version,
+    releaseDate: doc.releaseDate,
+    files: sortFileEntries(fileEntries(doc)),
+  };
+}
+
 function mergeUpdateMetadata(
   dir: string,
   outputName: string,
@@ -73,8 +82,8 @@ function mergeUpdateMetadata(
   }
 
   if (sources.length === 1) {
-    const doc = readFileSync(sources[0]!, "utf-8");
-    writeFileSync(output, doc);
+    const doc = load(readFileSync(sources[0]!, "utf-8")) as UpdateMetadata;
+    writeFileSync(output, dump(normalizeMetadata(doc)));
     if (sources[0] !== output) {
       unlinkSync(sources[0]!);
     }
@@ -100,10 +109,7 @@ function mergeUpdateMetadata(
     }
   }
 
-  merged.files = sortFileEntries(merged.files!);
-  // Multi-arch feed: do not set top-level path (CI sort used to pick arm64 first).
-
-  writeFileSync(output, dump(merged));
+  writeFileSync(output, dump(normalizeMetadata(merged)));
   for (const source of sources) {
     if (source !== output) {
       unlinkSync(source);
