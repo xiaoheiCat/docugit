@@ -301,6 +301,7 @@ jobs:
 
       - name: Flatten artifacts
         run: |
+          set -euo pipefail
           mkdir -p release/bin release/install release/desktop
           # Artifact download drops the executable bit on Unix binaries; do not rely on -executable.
           find dist/bin -mindepth 2 -type f -exec cp {} release/bin/ \;
@@ -313,7 +314,7 @@ jobs:
             idx=$((idx + 1))
           done < <(find dist/desktop -name 'latest-mac.yml' | sort)
           find dist/desktop -name 'latest.yml' -exec cp {} release/desktop/ \; 2>/dev/null || true
-          cd desktop && bun run scripts/merge-update-metadata.ts ../release/desktop
+          (cd desktop && bun run scripts/merge-update-metadata.ts ../release/desktop)
           ls -la release/bin/
           ls -la release/install/ || true
           ls -la release/desktop/ || true
