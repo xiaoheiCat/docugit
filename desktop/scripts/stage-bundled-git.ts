@@ -131,25 +131,42 @@ function extractTarGzWithWindowsTar(archive: string, outputDir: string): boolean
   return false;
 }
 
-function extractTarGz(archive: string, outputDir: string): void {
-  const archivePath = tarFriendlyPath(archive);
-  const outputPath = tarFriendlyPath(outputDir);
-  const args = ["--force-local", "-xzf", archivePath, "-C", outputPath];
-  const result = spawnSync("tar", args, {
-    encoding: "utf-8",
-    env: { ...process.env, MSYS2_ARG_CONV_EXCL: "*" },
-  });
+function extractTarGzUnix(archive: string, outputDir: string): void {
+  const result = spawnSync("tar", ["-xzf", archive, "-C", outputDir], { encoding: "utf-8" });
   if (result.status === 0) {
     return;
   }
-
-  if (process.platform === "win32" && extractTarGzWithWindowsTar(archive, outputDir)) {
-    return;
-  }
-
   const detail = (result.stderr || result.stdout || "").trim();
   console.error(`fatal: tar extract failed${detail ? `: ${detail}` : ""}`);
   process.exit(1);
+}
+
+function extractTarGzWindows(archive: string, outputDir: string): void {
+  const archivePath = tarFriendlyPath(archive);
+  const outputPath = tarFriendlyPath(outputDir);
+  const gnuResult = spawnSync("tar", ["--force-local", "-xzf", archivePath, "-C", outputPath], {
+    encoding: "utf-8",
+    env: { ...process.env, MSYS2_ARG_CONV_EXCL: "*" },
+  });
+  if (gnuResult.status === 0) {
+    return;
+  }
+
+  if (extractTarGzWithWindowsTar(archive, outputDir)) {
+    return;
+  }
+
+  const detail = (gnuResult.stderr || gnuResult.stdout || "").trim();
+  console.error(`fatal: tar extract failed${detail ? `: ${detail}` : ""}`);
+  process.exit(1);
+}
+
+function extractTarGz(archive: string, outputDir: string): void {
+  if (process.platform === "win32") {
+    extractTarGzWindows(archive, outputDir);
+    return;
+  }
+  extractTarGzUnix(archive, outputDir);
 }
 
 /** If the archive has a single top-level directory, return that path; else outputDir. */
