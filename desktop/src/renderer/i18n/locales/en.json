@@ -106,7 +106,7 @@
   "dialog.confirm": "Confirm",
   "settings.title": "Settings",
   "settings.language": "Language",
-  "settings.storageLocation": "Document storage",
+  "settings.storageLocation": "Internal repository location",
   "settings.gitSource": "Git source",
   "settings.gitSystem": "System Git",
   "settings.gitBundled": "Bundled Git",

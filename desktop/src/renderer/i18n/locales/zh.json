@@ -106,7 +106,7 @@
   "dialog.confirm": "确认",
   "settings.title": "设置",
   "settings.language": "界面语言",
-  "settings.storageLocation": "文档存放位置",
+  "settings.storageLocation": "内部仓库位置",
   "settings.gitSource": "Git 来源",
   "settings.gitSystem": "使用系统 Git",
   "settings.gitBundled": "使用内置 Git",
