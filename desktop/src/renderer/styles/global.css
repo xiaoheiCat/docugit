@@ -51,6 +51,44 @@ select,
   -webkit-user-select: text;
 }
 
+select {
+  color-scheme: dark;
+  background-color: #1e293b;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 36px 10px 12px;
+  cursor: pointer;
+  line-height: 1.35;
+}
+
+select:focus {
+  outline: 2px solid rgba(96, 165, 250, 0.55);
+  outline-offset: 1px;
+}
+
+select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+select option,
+select optgroup {
+  background-color: #1e293b;
+  color: #e5e7eb;
+}
+
+/* Windows native select popups often ignore transparent backgrounds on the control. */
+[data-platform="win32"] select {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+[data-platform="win32"] select option {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
 button {
   cursor: pointer;
 }
@@ -1175,8 +1213,7 @@ html[data-platform="darwin"] .top-nav {
   font-size: 0.9rem;
 }
 
-.dialog input,
-.dialog select {
+.dialog input {
   width: 100%;
   margin-top: 6px;
   padding: 10px 12px;
@@ -1184,6 +1221,15 @@ html[data-platform="darwin"] .top-nav {
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text);
+}
+
+.dialog select {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.settings-field select {
+  width: 100%;
 }
 
 .branch-picker {

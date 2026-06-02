@@ -128,6 +128,12 @@
   -webkit-user-select: text;
 }
 
+.glass-content select {
+  background-color: #1e293b;
+  color: var(--text);
+  color-scheme: dark;
+}
+
 .glass-button {
   --bg-color: rgba(255, 255, 255, 0.1);
   --highlight: rgba(255, 255, 255, 0.35);

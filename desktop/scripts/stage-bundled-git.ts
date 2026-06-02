@@ -91,15 +91,65 @@ async function download(url: string, dest: string): Promise<void> {
     process.exit(1);
   }
   await pipeline(body, createWriteStream(dest));
+  const size = statSync(dest).size;
+  if (size < 1_000_000) {
+    console.error(`fatal: download too small (${size} bytes): ${url}`);
+    process.exit(1);
+  }
+}
+
+/** MSYS tar on Windows treats `C:\...` as a remote host; use POSIX paths + --force-local. */
+function tarFriendlyPath(path: string): string {
+  if (process.platform !== "win32") {
+    return path;
+  }
+  const driveMatch = /^([A-Za-z]):[\\/]/.exec(path);
+  if (driveMatch) {
+    const drive = driveMatch[1]!.toLowerCase();
+    const rest = path.slice(3).replace(/\\/g, "/");
+    return `/${drive}/${rest}`;
+  }
+  return path.replace(/\\/g, "/");
+}
+
+function quotePowerShell(value: string): string {
+  return `'${value.replace(/'/g, "''")}'`;
+}
+
+function extractTarGzWithWindowsTar(archive: string, outputDir: string): boolean {
+  const cmd = `tar.exe -xzf ${quotePowerShell(archive)} -C ${quotePowerShell(outputDir)}`;
+  const result = spawnSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", cmd], {
+    encoding: "utf-8",
+  });
+  if (result.status === 0) {
+    return true;
+  }
+  const detail = (result.stderr || result.stdout || "").trim();
+  if (detail) {
+    console.error(`hint: windows tar failed: ${detail}`);
+  }
+  return false;
 }
 
 function extractTarGz(archive: string, outputDir: string): void {
-  const result = spawnSync("tar", ["-xzf", archive, "-C", outputDir], { encoding: "utf-8" });
-  if (result.status !== 0) {
-    const detail = (result.stderr || result.stdout || "").trim();
-    console.error(`fatal: tar extract failed${detail ? `: ${detail}` : ""}`);
-    process.exit(1);
+  const archivePath = tarFriendlyPath(archive);
+  const outputPath = tarFriendlyPath(outputDir);
+  const args = ["--force-local", "-xzf", archivePath, "-C", outputPath];
+  const result = spawnSync("tar", args, {
+    encoding: "utf-8",
+    env: { ...process.env, MSYS2_ARG_CONV_EXCL: "*" },
+  });
+  if (result.status === 0) {
+    return;
   }
+
+  if (process.platform === "win32" && extractTarGzWithWindowsTar(archive, outputDir)) {
+    return;
+  }
+
+  const detail = (result.stderr || result.stdout || "").trim();
+  console.error(`fatal: tar extract failed${detail ? `: ${detail}` : ""}`);
+  process.exit(1);
 }
 
 /** If the archive has a single top-level directory, return that path; else outputDir. */

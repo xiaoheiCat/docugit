@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, shell } from "electron";
+import { app, BrowserWindow, Menu, nativeTheme, shell } from "electron";
 import { readFileSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -86,6 +86,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  nativeTheme.themeSource = "dark";
   Menu.setApplicationMenu(null);
   registerIpcHandlers();
   initAutoUpdater();
