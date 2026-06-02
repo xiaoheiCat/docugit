@@ -65,6 +65,16 @@ docugit export
 docugit export ./final.docx
 ```
 
+### 从外部文件导入
+
+在已有 DocuGit 仓库中，用外部（非 DocuGit 管理）的 Office 文件替换当前解包内容并提交新版本（保留 `.git` 与仓库元数据）：
+
+```bash
+cd my-doc-repo
+docugit import ../edited-offline.docx
+docugit import ../edited-offline.docx -y
+```
+
 ### 文档名称
 
 ```bash
@@ -82,6 +92,7 @@ docugit commit -m "rename document"
 | `clone` | `<url> [dir]` |
 | `open` | |
 | `restore` | `[-y]` |
+| `import` | `<file> [-y]` |
 | `export` | `[output]` (default: `../<document>`) |
 | `name` | |
 | `rename` | `<name>` |

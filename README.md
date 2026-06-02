@@ -134,6 +134,7 @@ my-doc/
 | `docugit clone <url>` | Clone a remote repository |
 | `docugit open` | Open in Office for editing |
 | `docugit restore [-y]` | Discard the open session |
+| `docugit import <file> [-y]` | Import an external Office file and commit as a new version |
 | `docugit export [path]` | Export an Office file (default: `../<document>`) |
 | `docugit name` | Show document filename |
 | `docugit rename <name>` | Rename document filename |

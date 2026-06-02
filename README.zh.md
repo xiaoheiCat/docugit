@@ -134,6 +134,7 @@ my-doc/
 | `docugit clone <url>` | 克隆远程仓库 |
 | `docugit open` | 在 Office 中打开编辑 |
 | `docugit restore [-y]` | 丢弃 open session |
+| `docugit import <file> [-y]` | 从外部 Office 文件导入并提交为新版本 |
 | `docugit export [path]` | 导出 Office 文件（默认 `../<文档名>`） |
 | `docugit name` | 查看文档文件名 |
 | `docugit rename <name>` | 修改文档文件名 |

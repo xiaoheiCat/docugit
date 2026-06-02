@@ -11,7 +11,7 @@ async function confirmDiscard(force: boolean): Promise<boolean> {
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   try {
-    const answer = await rl.question("Discard open session changes? [y/N]? ");
+    const answer = await rl.question("Discard open session changes [y/N]? ");
     const normalized = answer.trim().toLowerCase();
     return normalized === "y" || normalized === "yes";
   } finally {

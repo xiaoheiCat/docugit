@@ -9,12 +9,14 @@ import { runCommit, runMerge } from "./commands/commit.ts";
 import { runName, runRename } from "./commands/name.ts";
 import { runRepair } from "./commands/repair.ts";
 import { runRestore } from "./commands/restore.ts";
+import { runImport } from "./commands/import.ts";
 
 const DOCUGIT_COMMANDS = new Set([
   "init",
   "new",
   "open",
   "restore",
+  "import",
   "export",
   "name",
   "rename",
@@ -79,6 +81,15 @@ async function main(): Promise<void> {
     .option("-y", "Discard without confirmation")
     .action(async (opts: { y?: boolean }) => {
       process.exit(await runRestore(Boolean(opts.y)));
+    });
+
+  program
+    .command("import")
+    .description("Import an external Office file as a new version")
+    .argument("<file>", "Office file path (.docx/.xlsx/.pptx)")
+    .option("-y", "Import without confirmation")
+    .action(async (file: string, opts: { y?: boolean }) => {
+      process.exit(await runImport(file, Boolean(opts.y)));
     });
 
   program

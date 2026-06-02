@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile, unlink, stat } from "node:fs/promises";
 import { join, dirname, resolve } from "node:path";
 import {
   createDefaultConfig,
@@ -8,10 +8,11 @@ import {
   formatDocumentFilename,
   normalizeDocumentName,
   readConfig,
+  isDocuGitRepo,
   type Author,
   type DocumentType,
 } from "../config/docugit-yml.ts";
-import { unpackFromFile, inferTypeFromParts, listOoxmlParts } from "../ooxml/pack.ts";
+import { unpackFromFile, unpackFromBuffer, inferTypeFromParts, listOoxmlParts } from "../ooxml/pack.ts";
 import { runGit, gitOutput, isGitRepo } from "../utils/git.ts";
 import { setupRepoSkill } from "../utils/skill.ts";
 import { setupDocumentAgentDocs } from "../config/document-agents-md.ts";
@@ -129,6 +130,65 @@ export async function newRepo(
 
   runGit(["add", "."], targetDir);
   runGit(["commit", "-m", `docugit: create ${originalName}`], targetDir);
+}
+
+export async function clearOoxmlParts(repoRoot: string): Promise<void> {
+  for (const part of await listOoxmlParts(repoRoot)) {
+    await unlink(join(repoRoot, part));
+  }
+}
+
+/** Read-only checks before import confirmation. */
+export async function validateImportFromFile(
+  repoRoot: string,
+  sourceFile: string,
+): Promise<{ resolved: string; type: DocumentType }> {
+  const resolved = resolve(sourceFile);
+  const type = detectDocumentType(resolved);
+  if (!type) {
+    throw new Error("fatal: unsupported file type; use .docx, .xlsx, or .pptx");
+  }
+
+  if (!(await isDocuGitRepo(repoRoot))) {
+    throw new Error("fatal: not a DocuGit repository (missing .docugit.yml)");
+  }
+  if (!isGitRepo(repoRoot)) {
+    throw new Error("fatal: not a git repository");
+  }
+
+  const config = await readConfig(repoRoot);
+  if (type !== config.document.type) {
+    throw new Error(`fatal: expected .${config.document.type}, got .${type}`);
+  }
+
+  try {
+    await stat(resolved);
+  } catch {
+    throw new Error(`fatal: '${resolved}' does not exist`);
+  }
+
+  return { resolved, type };
+}
+
+/** Replace unpacked OOXML after confirmation; keeps .git and DocuGit metadata. */
+export async function applyImportFromFile(
+  repoRoot: string,
+  resolved: string,
+  type: DocumentType,
+): Promise<void> {
+  const sourceBuffer = await readFile(resolved);
+
+  const { removeOpenSessionFile } = await import("./open-session.ts");
+  await removeOpenSessionFile(repoRoot);
+
+  await clearOoxmlParts(repoRoot);
+  await unpackFromBuffer(sourceBuffer, repoRoot);
+
+  const { repairOoxmlPackage } = await import("../ooxml/repair.ts");
+  await repairOoxmlPackage(repoRoot, {
+    sourceFileDir: resolve(dirname(resolved)),
+    documentType: type,
+  });
 }
 
 export async function exportDocument(repoRoot: string, outputPath?: string): Promise<string> {
