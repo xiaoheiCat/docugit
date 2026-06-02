@@ -8,6 +8,7 @@ import {
   resolveDocugit,
   resolveGit,
 } from "./git-resolver.ts";
+import { gitIdentityEnvFromSettings } from "./git-identity.ts";
 
 function bundledGitPathEntries(gitRoot: string): string[] {
   if (process.platform === "win32") {
@@ -38,6 +39,7 @@ function buildEnv(): NodeJS.ProcessEnv {
 
   const env: NodeJS.ProcessEnv = {
     ...process.env,
+    ...gitIdentityEnvFromSettings(),
     PATH: `${pathParts.join(sep)}${sep}${process.env.PATH ?? ""}`,
     DOCUGIT_NO_OPEN: "1",
     GIT_TERMINAL_PROMPT: "0",

@@ -1274,8 +1274,17 @@ html[data-platform="darwin"] .top-nav {
   margin-top: 6px;
 }
 
-.settings-field select {
+.settings-field select,
+.settings-field input {
   width: 100%;
+}
+
+.settings-field input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
 }
 
 .branch-picker {

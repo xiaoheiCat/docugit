@@ -21,6 +21,12 @@ const api: DocuGitDesktopApi = {
   getRuntimeInfo: () => ipcRenderer.invoke("runtime:info"),
   getSetting: (key) => ipcRenderer.invoke("settings:get", key),
   setSetting: (key, value) => ipcRenderer.invoke("settings:set", key, value),
+  getGitCommitIdentity: () => ipcRenderer.invoke("git:getCommitIdentity"),
+  setGitCommitIdentity: (identity) => ipcRenderer.invoke("git:setCommitIdentity", identity),
+  getWorkspaceOriginUrl: (workspaceId) =>
+    ipcRenderer.invoke("workspaces:getOriginUrl", workspaceId),
+  setWorkspaceOriginUrl: (workspaceId, url) =>
+    ipcRenderer.invoke("workspaces:setOriginUrl", workspaceId, url),
   getAppVersion: () => ipcRenderer.invoke("app:getVersion"),
   checkForUpdates: () => ipcRenderer.invoke("update:check"),
   quitAndInstall: () => ipcRenderer.invoke("update:quitAndInstall"),

@@ -124,6 +124,11 @@ export interface PickSaveFileOptions {
   extension?: DocumentType;
 }
 
+export interface GitCommitIdentity {
+  name: string;
+  email: string;
+}
+
 export type UpdateStatus =
   | { state: "idle" }
   | { state: "checking" }
@@ -158,6 +163,10 @@ export interface DocuGitDesktopApi {
   getRuntimeInfo(): Promise<RuntimeInfo>;
   getSetting(key: string): Promise<string | null>;
   setSetting(key: string, value: string): Promise<void>;
+  getGitCommitIdentity(): Promise<GitCommitIdentity>;
+  setGitCommitIdentity(identity: GitCommitIdentity): Promise<void>;
+  getWorkspaceOriginUrl(workspaceId: string): Promise<string | null>;
+  setWorkspaceOriginUrl(workspaceId: string, url: string): Promise<void>;
   getAppVersion(): Promise<string>;
   checkForUpdates(): Promise<boolean>;
   quitAndInstall(): Promise<void>;

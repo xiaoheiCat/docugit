@@ -335,3 +335,56 @@ export async function importRepo(params: ImportRepoParams): Promise<WorkspaceEnt
 
   return registerWorkspace(repoPath, repoName, "import", undefined, undefined, id);
 }
+
+async function updateWorkspaceRemoteUrl(id: string, remoteUrl?: string): Promise<void> {
+  const registry = await loadRegistry();
+  const entry = registry.workspaces.find((w) => w.id === id);
+  if (!entry) {
+    return;
+  }
+  if (remoteUrl) {
+    entry.remoteUrl = remoteUrl;
+  } else {
+    delete entry.remoteUrl;
+  }
+  await saveRegistry(registry);
+}
+
+export async function getWorkspaceOriginUrl(workspaceId: string): Promise<string | null> {
+  const workspace = await getWorkspace(workspaceId);
+  const result = await runGit(workspace.path, ["remote", "get-url", "origin"]);
+  if (result.exitCode !== 0) {
+    return null;
+  }
+  return result.stdout.trim() || null;
+}
+
+export async function setWorkspaceOriginUrl(workspaceId: string, url: string): Promise<void> {
+  const workspace = await getWorkspace(workspaceId);
+  const trimmed = url.trim();
+  const existing = await runGit(workspace.path, ["remote", "get-url", "origin"]);
+
+  if (!trimmed) {
+    if (existing.exitCode === 0) {
+      const removed = await runGit(workspace.path, ["remote", "remove", "origin"]);
+      if (removed.exitCode !== 0) {
+        throw new Error(removed.stderr || removed.stdout || "git remote remove failed");
+      }
+    }
+    await updateWorkspaceRemoteUrl(workspaceId, undefined);
+    return;
+  }
+
+  if (existing.exitCode === 0) {
+    const updated = await runGit(workspace.path, ["remote", "set-url", "origin", trimmed]);
+    if (updated.exitCode !== 0) {
+      throw new Error(updated.stderr || updated.stdout || "git remote set-url failed");
+    }
+  } else {
+    const added = await runGit(workspace.path, ["remote", "add", "origin", trimmed]);
+    if (added.exitCode !== 0) {
+      throw new Error(added.stderr || added.stdout || "git remote add failed");
+    }
+  }
+  await updateWorkspaceRemoteUrl(workspaceId, trimmed);
+}

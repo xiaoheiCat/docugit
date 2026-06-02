@@ -53,6 +53,8 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [updateBusy, setUpdateBusy] = useState(false);
   const [manualCheckBlocked, setManualCheckBlocked] = useState(false);
+  const [gitUserName, setGitUserName] = useState("");
+  const [gitUserEmail, setGitUserEmail] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -60,6 +62,10 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
       void window.docugitDesktop.getAppVersion().then(setAppVersion);
       void window.docugitDesktop.getSetting("language").then((value) => {
         if (value) setLanguage(value);
+      });
+      void window.docugitDesktop.getGitCommitIdentity().then((identity) => {
+        setGitUserName(identity.name);
+        setGitUserEmail(identity.email);
       });
       void window.docugitDesktop.checkForUpdates().then((started) => {
         if (started) {
@@ -93,6 +99,16 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
 
   async function changeTheme(next: UiTheme): Promise<void> {
     await setTheme(next);
+  }
+
+  async function changeGitUserName(next: string): Promise<void> {
+    setGitUserName(next);
+    await window.docugitDesktop.setGitCommitIdentity({ name: next, email: gitUserEmail });
+  }
+
+  async function changeGitUserEmail(next: string): Promise<void> {
+    setGitUserEmail(next);
+    await window.docugitDesktop.setGitCommitIdentity({ name: gitUserName, email: next });
   }
 
   async function handleCheckForUpdates(): Promise<void> {
@@ -129,6 +145,21 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps): React.JS
                 <option value="liquid">{t("settings.themeLiquid")}</option>
                 <option value="frosted">{t("settings.themeFrosted")}</option>
               </select>
+            </label>
+            <label className="settings-field">
+              <span>{t("settings.gitUserName")}</span>
+              <input
+                value={gitUserName}
+                onChange={(e) => void changeGitUserName(e.target.value)}
+              />
+            </label>
+            <label className="settings-field">
+              <span>{t("settings.gitUserEmail")}</span>
+              <input
+                type="email"
+                value={gitUserEmail}
+                onChange={(e) => void changeGitUserEmail(e.target.value)}
+              />
             </label>
             <div className="settings-field">
               <span>{t("settings.appVersion")}</span>

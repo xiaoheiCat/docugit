@@ -4,43 +4,27 @@ import {
   getUpdateStatus,
   quitAndInstall,
 } from "./auto-updater.ts";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { join } from "node:path";
 import {
   cloneRepo,
   createInit,
   createNew,
   getWorkspace,
+  getWorkspaceOriginUrl,
   importRepo,
   listWorkspaces,
   removeWorkspace,
-  SESSION_ACTIVE_WORKSPACE_KEY,
+  setWorkspaceOriginUrl,
   touchWorkspace,
   touchWorkspaceSync,
 } from "./workspace-registry.ts";
 import { runDocugit, runGit } from "./cli-spawner.ts";
 import { getDataRoot, formatDocugitPath, resolveDocugit, resolveGit } from "./git-resolver.ts";
-
-const SETTINGS_FILE = "settings.json";
-
-async function settingsPath(): Promise<string> {
-  const root = getDataRoot();
-  await mkdir(root, { recursive: true });
-  return join(root, SETTINGS_FILE);
-}
-
-async function readSettings(): Promise<Record<string, string>> {
-  try {
-    const raw = await readFile(await settingsPath(), "utf-8");
-    return JSON.parse(raw) as Record<string, string>;
-  } catch {
-    return {};
-  }
-}
-
-async function writeSettings(settings: Record<string, string>): Promise<void> {
-  await writeFile(await settingsPath(), JSON.stringify(settings, null, 2), "utf-8");
-}
+import { getSetting, setSetting } from "./settings-store.ts";
+import {
+  applyGitCommitIdentity,
+  loadGitCommitIdentity,
+  type GitCommitIdentityInput,
+} from "./git-identity.ts";
 
 function focusedWindow(): BrowserWindow | null {
   return BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0] ?? null;
@@ -66,6 +50,17 @@ export function registerIpcHandlers(): void {
     event.returnValue = true;
   });
 
+  ipcMain.handle("workspaces:getOriginUrl", async (_event, workspaceId: string) => {
+    return getWorkspaceOriginUrl(workspaceId);
+  });
+
+  ipcMain.handle(
+    "workspaces:setOriginUrl",
+    async (_event, workspaceId: string, url: string) => {
+      await setWorkspaceOriginUrl(workspaceId, url);
+    },
+  );
+
   ipcMain.handle("docugit:run", async (_event, workspaceId: string, args: string[]) => {
     const workspace = await getWorkspace(workspaceId);
     return runDocugit(workspace.path, args);
@@ -74,6 +69,18 @@ export function registerIpcHandlers(): void {
   ipcMain.handle("git:run", async (_event, workspaceId: string, args: string[]) => {
     const workspace = await getWorkspace(workspaceId);
     return runGit(workspace.path, args);
+  });
+
+  ipcMain.handle("git:getCommitIdentity", async () => {
+    const identity = await loadGitCommitIdentity();
+    return {
+      name: identity.name ?? "",
+      email: identity.email ?? "",
+    };
+  });
+
+  ipcMain.handle("git:setCommitIdentity", async (_event, identity: GitCommitIdentityInput) => {
+    await applyGitCommitIdentity(identity.name, identity.email);
   });
 
   ipcMain.handle("dialog:pickFile", async (_event, filters?: { name: string; extensions: string[] }[]) => {
@@ -134,14 +141,11 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle("settings:get", async (_event, key: string) => {
-    const settings = await readSettings();
-    return settings[key] ?? null;
+    return getSetting(key);
   });
 
   ipcMain.handle("settings:set", async (_event, key: string, value: string) => {
-    const settings = await readSettings();
-    settings[key] = value;
-    await writeSettings(settings);
+    await setSetting(key, value);
   });
 
   ipcMain.handle("app:getVersion", () => app.getVersion());

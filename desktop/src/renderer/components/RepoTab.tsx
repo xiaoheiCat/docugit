@@ -16,6 +16,9 @@ import { DiffReport } from "../diff/DiffReport.tsx";
 import { LogView } from "../views/LogView.tsx";
 import { StatusView } from "../views/StatusView.tsx";
 import { RepoDialogs, type DialogKind } from "../views/RepoDialogs.tsx";
+import { GitIdentityDialog } from "./GitIdentityDialog.tsx";
+import { PropertiesDialog } from "./PropertiesDialog.tsx";
+import { isGitIdentityError } from "../../shared/git-identity.ts";
 import {
   formatCommandError,
   formatDocugitSuccess,
@@ -52,6 +55,11 @@ export function RepoTab({ workspace, active }: RepoTabProps): React.JSX.Element 
   const [diff, setDiff] = useState<SemanticDiffResult | null>(null);
   const [log, setLog] = useState<LogEntryJson[]>([]);
   const [dialog, setDialog] = useState<DialogKind>(null);
+  const [propertiesOpen, setPropertiesOpen] = useState(false);
+  const [gitIdentityPrompt, setGitIdentityPrompt] = useState<{
+    details?: string;
+    retry: () => Promise<boolean>;
+  } | null>(null);
   const [branchOptions, setBranchOptions] = useState<string[]>([]);
   const [branchesLoading, setBranchesLoading] = useState(false);
   const [notice, setNotice] = useState<NoticeState | null>(null);
@@ -69,6 +77,13 @@ export function RepoTab({ workspace, active }: RepoTabProps): React.JSX.Element 
   const showError = useCallback(
     (message: string, details?: string, title?: string) => {
       setErrorDialog({ message, details, title });
+    },
+    [],
+  );
+
+  const promptGitIdentity = useCallback(
+    (raw: string, details: string, retry: () => Promise<boolean>) => {
+      setGitIdentityPrompt({ details, retry });
     },
     [],
   );
@@ -174,9 +189,15 @@ export function RepoTab({ workspace, active }: RepoTabProps): React.JSX.Element 
     setNotice(null);
     const result = await window.docugitDesktop.runDocugit(workspace.id, args);
     const details = [result.stderr, result.stdout].filter(Boolean).join("\n");
+    const raw = result.stderr || result.stdout;
 
     if (result.exitCode !== 0) {
-      showError(formatCommandError(result.stderr || result.stdout, t, contextKey), details);
+      if (isGitIdentityError(raw)) {
+        promptGitIdentity(raw, details, () => runDocugit(args, contextKey));
+        await refresh();
+        return false;
+      }
+      showError(formatCommandError(raw, t, contextKey), details);
       await refresh();
       return false;
     }
@@ -194,9 +215,15 @@ export function RepoTab({ workspace, active }: RepoTabProps): React.JSX.Element 
     setNotice(null);
     const result = await window.docugitDesktop.runGit(workspace.id, args);
     const details = [result.stderr, result.stdout].filter(Boolean).join("\n");
+    const raw = result.stderr || result.stdout;
 
     if (result.exitCode !== 0) {
-      showError(formatCommandError(result.stderr || result.stdout, t, contextKey), details);
+      if (isGitIdentityError(raw)) {
+        promptGitIdentity(raw, details, () => runGit(args, contextKey));
+        await refresh();
+        return false;
+      }
+      showError(formatCommandError(raw, t, contextKey), details);
       await refresh();
       return false;
     }
@@ -345,8 +372,28 @@ export function RepoTab({ workspace, active }: RepoTabProps): React.JSX.Element 
         commitMessage,
       ]);
       const details = [commit.stderr, commit.stdout].filter(Boolean).join("\n");
+      const commitRaw = commit.stderr || commit.stdout;
       if (commit.exitCode !== 0) {
-        showError(formatCommandError(commit.stderr || commit.stdout, t, "revert"), details);
+        if (isGitIdentityError(commitRaw)) {
+          promptGitIdentity(commitRaw, details, async () => {
+            const retry = await window.docugitDesktop.runDocugit(workspace.id, [
+              "commit",
+              "-m",
+              commitMessage,
+            ]);
+            if (retry.exitCode !== 0) {
+              return false;
+            }
+            setNotice({ kind: "success", message: t("success.revert") });
+            setRevertTarget(null);
+            setPanel("status");
+            await refresh();
+            return true;
+          });
+          await refresh();
+          return;
+        }
+        showError(formatCommandError(commitRaw, t, "revert"), details);
         await refresh();
         return;
       }
@@ -449,6 +496,12 @@ export function RepoTab({ workspace, active }: RepoTabProps): React.JSX.Element 
             description: t("dock.hint.export"),
             onClick: () => void handleExport(),
           },
+          {
+            id: "properties",
+            label: t("toolbar.properties"),
+            description: t("dock.hint.properties"),
+            onClick: () => setPropertiesOpen(true),
+          },
         ]}
       />
 
@@ -496,6 +549,26 @@ export function RepoTab({ workspace, active }: RepoTabProps): React.JSX.Element 
       />
 
       <ErrorDialog state={errorDialog} onClose={() => setErrorDialog(null)} />
+
+      <PropertiesDialog
+        open={propertiesOpen}
+        workspaceId={workspace.id}
+        onClose={() => setPropertiesOpen(false)}
+      />
+
+      <GitIdentityDialog
+        open={gitIdentityPrompt !== null}
+        details={gitIdentityPrompt?.details}
+        onClose={() => setGitIdentityPrompt(null)}
+        onSave={async (name, email) => {
+          await window.docugitDesktop.setGitCommitIdentity({ name, email });
+          const retry = gitIdentityPrompt?.retry;
+          setGitIdentityPrompt(null);
+          if (retry) {
+            await retry();
+          }
+        }}
+      />
 
       <RollbackDialog
         open={revertTarget !== null}
