@@ -286,6 +286,11 @@ export async function cloneRepo(params: CloneRepoParams): Promise<WorkspaceEntry
     throw new Error(result.stderr || result.stdout || "git clone failed");
   }
 
+  if (!(await isDocuGitRepo(repoPath))) {
+    await rm(repoPath, { recursive: true, force: true });
+    throw new Error("fatal: not a DocuGit repository (missing .docugit.yml)");
+  }
+
   return registerWorkspace(repoPath, repoName, "clone", undefined, params.url, id);
 }
 

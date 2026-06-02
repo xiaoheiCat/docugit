@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import { UiThemeProvider } from "./theme/UiThemeContext.tsx";
 import { applyUiTheme, readLocalUiTheme } from "./theme/ui-theme.ts";
 import "./styles/global.css";
+import "./styles/custom-scroll.css";
 import "./i18n/index.ts";
 
 applyUiTheme(readLocalUiTheme());

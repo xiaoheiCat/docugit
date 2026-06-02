@@ -10,6 +10,20 @@ function normalizeRaw(text: string): string {
   return text.replace(/\r\n/g, "\n").trim();
 }
 
+function isDocuGitRepoError(text: string, line: string): boolean {
+  if (line.includes("not a docugit repository") || line.includes("missing .docugit.yml")) {
+    return true;
+  }
+  if (!text.includes(".docugit.yml")) {
+    return false;
+  }
+  return (
+    text.includes("ENOENT") ||
+    line.includes("no such file or directory") ||
+    line.includes("does not exist")
+  );
+}
+
 /** Turn CLI stderr/stdout into a short user-facing message. */
 export function formatCommandError(
   raw: string,
@@ -23,6 +37,9 @@ export function formatCommandError(
     return contextKey ? t(`errors.${contextKey}.generic`) : t("errors.generic");
   }
 
+  if (isDocuGitRepoError(text, line)) {
+    return t("errors.notDocuGitRepo");
+  }
   if (text.includes("ENOENT") || line.includes("no such file or directory")) {
     return t("errors.fileNotFound");
   }

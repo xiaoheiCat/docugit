@@ -1,0 +1,81 @@
+/*
+ * Shared non-native scrollbars (WebKit + Firefox).
+ * Apply .custom-scroll or use the grouped selectors below.
+ */
+
+.custom-scroll,
+.open-tab-list,
+.branch-picker__list,
+.dialog-details-pre,
+.log-view,
+.dialog-stack > .glass-card.dialog > .glass-content,
+.panel-body-host.glass-card > .glass-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.38) rgba(255, 255, 255, 0.05);
+}
+
+.custom-scroll::-webkit-scrollbar,
+.open-tab-list::-webkit-scrollbar,
+.branch-picker__list::-webkit-scrollbar,
+.dialog-details-pre::-webkit-scrollbar,
+.log-view::-webkit-scrollbar,
+.dialog-stack > .glass-card.dialog > .glass-content::-webkit-scrollbar,
+.panel-body-host.glass-card > .glass-content::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scroll::-webkit-scrollbar-track,
+.open-tab-list::-webkit-scrollbar-track,
+.branch-picker__list::-webkit-scrollbar-track,
+.dialog-details-pre::-webkit-scrollbar-track,
+.log-view::-webkit-scrollbar-track,
+.dialog-stack > .glass-card.dialog > .glass-content::-webkit-scrollbar-track,
+.panel-body-host.glass-card > .glass-content::-webkit-scrollbar-track {
+  margin-block: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.custom-scroll::-webkit-scrollbar-thumb,
+.open-tab-list::-webkit-scrollbar-thumb,
+.branch-picker__list::-webkit-scrollbar-thumb,
+.dialog-details-pre::-webkit-scrollbar-thumb,
+.log-view::-webkit-scrollbar-thumb,
+.dialog-stack > .glass-card.dialog > .glass-content::-webkit-scrollbar-thumb,
+.panel-body-host.glass-card > .glass-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.42) 0%,
+    rgba(100, 116, 139, 0.32) 100%
+  );
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.08);
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover,
+.open-tab-list::-webkit-scrollbar-thumb:hover,
+.branch-picker__list::-webkit-scrollbar-thumb:hover,
+.dialog-details-pre::-webkit-scrollbar-thumb:hover,
+.log-view::-webkit-scrollbar-thumb:hover,
+.dialog-stack > .glass-card.dialog > .glass-content::-webkit-scrollbar-thumb:hover,
+.panel-body-host.glass-card > .glass-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(147, 197, 253, 0.62) 0%,
+    rgba(96, 165, 250, 0.48) 100%
+  );
+  border-color: rgba(147, 197, 253, 0.28);
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:active,
+.open-tab-list::-webkit-scrollbar-thumb:active,
+.branch-picker__list::-webkit-scrollbar-thumb:active,
+.dialog-details-pre::-webkit-scrollbar-thumb:active,
+.log-view::-webkit-scrollbar-thumb:active,
+.dialog-stack > .glass-card.dialog > .glass-content::-webkit-scrollbar-thumb:active,
+.panel-body-host.glass-card > .glass-content::-webkit-scrollbar-thumb:active {
+  background: rgba(96, 165, 250, 0.55);
+}

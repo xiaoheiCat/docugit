@@ -1185,16 +1185,33 @@ html[data-platform="darwin"] .top-nav {
 }
 
 .dialog-stack {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   align-items: stretch;
   gap: 12px;
   width: min(480px, 100%);
+  max-height: min(calc(100dvh - 32px), calc(100vh - 32px));
+  min-height: 0;
+}
+
+.dialog-stack > .glass-card.dialog {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog-stack > .glass-card.dialog > .glass-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .dialog-stack .dialog-actions {
   justify-content: flex-end;
   margin-top: 0;
+  flex-shrink: 0;
 }
 
 .dialog {

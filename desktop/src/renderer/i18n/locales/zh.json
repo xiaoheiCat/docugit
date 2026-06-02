@@ -151,6 +151,7 @@
   "errors.fileNotFound": "找不到所需的文件或文件夹",
   "errors.docugitMissing": "找不到 DocuGit 程序，请联系管理员或重新安装",
   "errors.notGitRepo": "这不是一个有效的 Git 仓库",
+  "errors.notDocuGitRepo": "这不是一个有效的 DocuGit 仓库",
   "errors.authFailed": "远程认证失败，请检查账号或访问权限",
   "errors.permissionDenied": "没有权限执行此操作",
   "errors.network": "无法连接远程服务器，请检查网络",

@@ -151,6 +151,7 @@
   "errors.fileNotFound": "A required file or folder was not found",
   "errors.docugitMissing": "DocuGit was not found. Reinstall or contact your administrator.",
   "errors.notGitRepo": "This is not a valid Git repository",
+  "errors.notDocuGitRepo": "This is not a valid DocuGit repository",
   "errors.authFailed": "Remote authentication failed. Check your credentials.",
   "errors.permissionDenied": "You do not have permission to perform this action",
   "errors.network": "Could not reach the remote server. Check your network.",
