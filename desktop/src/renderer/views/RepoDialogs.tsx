@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DocumentType } from "../../shared/types.ts";
 import { BranchPicker } from "../components/BranchPicker.tsx";
+import { formatDocumentTypeLabel } from "../utils/document-type.ts";
 import { ConfirmDialog } from "../components/ConfirmDialog.tsx";
 import { GlassButton, GlassPanel } from "../components/GlassPanel.tsx";
 
@@ -243,9 +244,9 @@ export function RepoDialogs({
               <label>
                 {t("dialog.new.type")}
                 <select value={type} onChange={(e) => setType(e.target.value as DocumentType)}>
-                  <option value="docx">docx</option>
-                  <option value="xlsx">xlsx</option>
-                  <option value="pptx">pptx</option>
+                  <option value="docx">{formatDocumentTypeLabel("docx", t)}</option>
+                  <option value="xlsx">{formatDocumentTypeLabel("xlsx", t)}</option>
+                  <option value="pptx">{formatDocumentTypeLabel("pptx", t)}</option>
                 </select>
               </label>
               <label>

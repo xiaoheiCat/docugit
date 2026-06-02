@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { WorkspaceEntry } from "../../shared/types.ts";
 import { GlassButton, GlassPanel } from "./GlassPanel.tsx";
+import { formatDocumentTypeLabel } from "../utils/document-type.ts";
 
 interface OpenTabDialogProps {
   open: boolean;
@@ -39,7 +40,9 @@ export function OpenTabDialog({
                     }}
                   >
                     <span className="open-tab-item__name">{workspace.name}</span>
-                    <span className="open-tab-item__type">{workspace.documentType}</span>
+                    <span className="open-tab-item__type">
+                      {formatDocumentTypeLabel(workspace.documentType, t)}
+                    </span>
                   </button>
                 </li>
               ))}

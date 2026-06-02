@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { SemanticDiffResult } from "../../shared/types.ts";
 import { DockIcon } from "../components/DockIcons.tsx";
+import { formatDocumentTypeLabel } from "../utils/document-type.ts";
 
 interface DiffCompareLineProps {
   result: SemanticDiffResult;
@@ -16,7 +17,7 @@ export function DiffCompareLine({
   const { t } = useTranslation();
 
   if (!result.base) {
-    return <p className="diff-compare-line">{result.documentType}</p>;
+    return <p className="diff-compare-line">{formatDocumentTypeLabel(result.documentType, t)}</p>;
   }
 
   const showReset = Boolean(result.head && !result.compareWorktree && onResetCompare);
