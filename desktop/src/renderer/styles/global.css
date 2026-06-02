@@ -604,10 +604,16 @@ html[data-platform="darwin"] .top-nav {
   padding: 4px 8px;
 }
 
-.notice-banner__action {
+.notice-banner__action.glass-button {
   flex-shrink: 0;
-  padding: 6px 12px;
-  font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+.notice-banner__action .glass-button-content {
+  padding: 2px 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .settings-list .settings-update-row {
