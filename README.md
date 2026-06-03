@@ -172,6 +172,19 @@ For long-term use, install the skill into your agent environment:
 npx skills add xiaoheiCat/docugit -g -y
 ```
 
+## Acknowledgments
+
+<img
+  src="assets/linux-do-logo.png"
+  width="32"
+  height="32"
+  alt="Linux Do"
+  style="vertical-align: middle; margin-right: 12px;"
+/>
+<a href="https://linux.do">
+  <span style="vertical-align: middle;">Linux Do community</span>
+</a>
+
 ## License
 
 GPL-3.0

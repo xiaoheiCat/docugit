@@ -167,6 +167,19 @@ my-doc/
 
 若要长期使用，强烈建议安装此 Skill 到 AI Agent 的 Skill 区域: `npx skills add xiaoheiCat/docugit -g -y`
 
+## 特别鸣谢
+
+<img
+  src="assets/linux-do-logo.png"
+  width="32"
+  height="32"
+  alt="Linux Do"
+  style="vertical-align: middle; margin-right: 12px;"
+/>
+<a href="https://linux.do">
+  <span style="vertical-align: middle;">Linux Do 社区</span>
+</a>
+
 ## 许可证
 
 GPL-3.0
