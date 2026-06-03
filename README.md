@@ -174,16 +174,16 @@ npx skills add xiaoheiCat/docugit -g -y
 
 ## Acknowledgments
 
-<img
-  src="assets/linux-do-logo.png"
-  width="32"
-  height="32"
-  alt="Linux Do"
-  style="vertical-align: middle; margin-right: 12px;"
-/>
-<a href="https://linux.do">
-  <span style="vertical-align: middle;">Linux Do community</span>
-</a>
+<table>
+  <tr>
+    <td>
+      <img src="assets/linux-do-logo.png" width="32" height="32">
+    </td>
+    <td>
+      <a href="https://linux.do">LINUX DO community</a>
+    </td>
+  </tr>
+</table>
 
 ## License
 

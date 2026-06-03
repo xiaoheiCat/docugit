@@ -169,16 +169,16 @@ my-doc/
 
 ## 特别鸣谢
 
-<img
-  src="assets/linux-do-logo.png"
-  width="32"
-  height="32"
-  alt="Linux Do"
-  style="vertical-align: middle; margin-right: 12px;"
-/>
-<a href="https://linux.do">
-  <span style="vertical-align: middle;">Linux Do 社区</span>
-</a>
+<table>
+  <tr>
+    <td>
+      <img src="assets/linux-do-logo.png" width="32" height="32">
+    </td>
+    <td>
+      <a href="https://linux.do">LINUX DO 社区</a>
+    </td>
+  </tr>
+</table>
 
 ## 许可证
 
