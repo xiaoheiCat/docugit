@@ -4,28 +4,28 @@
 class Docugit < Formula
   desc "Git-based version control for Office OpenXML documents"
   homepage "https://github.com/xiaoheiCat/docugit"
-  version "2026.06.03_02.58.38_b68143"
+  version "2026.06.03_03.09.05_210419"
   license "GPL-3.0"
 
   on_macos do
     on_arm do
-      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_02.58.38_b68143/docugit-darwin-arm64"
-      sha256 "13060a3c0b9260919d48aaf9ff622577e84fd8a054dda329687cc52fd8a7e909"
+      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_03.09.05_210419/docugit-darwin-arm64"
+      sha256 "42813671c01ba6f5edeaa248c8846c5d198034f72e3abd2f8d12c6352838c0bf"
     end
     on_intel do
-      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_02.58.38_b68143/docugit-darwin-amd64"
-      sha256 "9967625f6af1ac318e1dd56c728981eb18c76751b726b713d5116f669de8a636"
+      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_03.09.05_210419/docugit-darwin-amd64"
+      sha256 "0d61d1016263431db15c5fda0f93545fcac0cf7c3d5075905e920614614b8d12"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_02.58.38_b68143/docugit-linux-arm64"
-      sha256 "8a3cc887523f764733417f9b1693e65bfcf1f39c1005baf64d48a724bfb7f193"
+      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_03.09.05_210419/docugit-linux-arm64"
+      sha256 "22b4b87c3762234cca34c026b078d072f415672e4a46c7c7f0835895b83718fa"
     end
     on_intel do
-      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_02.58.38_b68143/docugit-linux-amd64"
-      sha256 "2f6beb1d0e99a864daf751c9b9fdb41475024455930d25767e23c8a8f740612d"
+      url "https://github.com/xiaoheiCat/docugit/releases/download/v2026.06.03_03.09.05_210419/docugit-linux-amd64"
+      sha256 "2fe32aaf937f6a4bab79f3f65777d7480832d31f78e2bf7dee6735a02021f742"
     end
   end
 
